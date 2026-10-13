@@ -41,6 +41,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="btn sub" onclick="startExtra(5)">추가 5문제</button>
 <button class="btn sub" onclick="startExtra(10)">추가 10문제</button>
 <button class="btn sub" onclick="startWrongRetry()">오답 다시풀기</button>
+<button class="btn sub" onclick="startPast()">기출문제 보기</button>
 </div>
 <div id="quizBox"></div><button class="btn" onclick="grade()">채점하기</button>
 </div>
@@ -55,7 +56,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="active" onclick="go('home',this)">홈</button><button onclick="go('quiz',this)">문제</button><button onclick="go('theory',this)">이론</button><button onclick="go('wrong',this)">오답</button><button onclick="go('analysis',this)">분석</button><button onclick="go('feedback',this)">피드백</button>
 </nav>
 <script>
-const BUILTIN_VERSION="v5.0";
+const BUILTIN_VERSION="v6.6";
 let data=null, ans={}; let currentQuiz=[]; let quizMode="daily";
 let state=JSON.parse(localStorage.getItem("studyState")||'{"solved":0,"correct":0,"wrong":[]}');
 
@@ -102,23 +103,25 @@ function go(id,btn){
 function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5)}
 function startDaily(){quizMode="daily";ans={};currentQuiz=data.questions.slice(0,10);quizTitle.textContent="오늘의 10문제";result.classList.add("hidden");renderQuiz()}
 function startExtra(n){quizMode="extra";ans={};const pool=data.questions.slice(10).length?data.questions.slice(10):data.questions;currentQuiz=shuffle(pool).slice(0,Math.min(n,pool.length));quizTitle.textContent=`추가 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
+function startPast(){quizMode="past";ans={};currentQuiz=data.questions.filter(q=>q.year);quizTitle.textContent=`실제 기출 ${currentQuiz.length}문제 · 공식 정답 검증 전`;result.classList.add("hidden");renderQuiz()}
 function startWrongRetry(){quizMode="wrong";ans={};if(!state.wrong.length){alert("아직 오답이 없습니다.");return}const ids=[...new Set(state.wrong.map(x=>x.id))];currentQuiz=ids.map(id=>data.questions.find(q=>q.id===id)).filter(Boolean);quizTitle.textContent=`오답 다시풀기 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
 function renderQuiz(){
   quizBox.innerHTML=currentQuiz.map((q,i)=>{
     const items=q.items?`<table>${q.items.map(x=>`<tr><td>${x}</td></tr>`).join("")}</table>`:"";
     const opts=q.opts.map((o,j)=>`<button class="opt ${ans[q.id]===j?'sel':''}" onclick="ans[${q.id}]=${j};renderQuiz()">${["①","②","③","④","⑤"][j]} ${o}</button>`).join("");
-    return `<div class="card"><div class="small">${q.subject} · ${q.topic}</div><div class="qtitle">${i+1}. ${q.q}</div>${items}${opts}</div>`
+    return `<div class="card"><div class="small">${q.subject} · ${q.topic}${q.year?` · ${q.year}년 ${q.examNo}번 · 채점 보류`:" · 기존 응용"}</div><div class="qtitle">${i+1}. ${q.q}</div>${items}${opts}</div>`
   }).join("")
 }
 function grade(){
   let c=0,w=[];
-  currentQuiz.forEach(q=>{if(ans[q.id]===q.a)c++;else w.push(q)});
-  state.solved+=currentQuiz.length;state.correct+=c;
+  const graded=currentQuiz.filter(q=>Number.isInteger(q.a)); const pending=currentQuiz.length-graded.length;
+  graded.forEach(q=>{if(ans[q.id]===q.a)c++;else w.push(q)});
+  state.solved+=graded.length;state.correct+=c;
   w.forEach(q=>{const old=state.wrong.find(x=>x.id===q.id); if(old){old.count=(old.count||1)+1}else state.wrong.push({...q,count:1})});
   localStorage.setItem("studyState",JSON.stringify(state));
   result.classList.remove("hidden");
   const more = quizMode==="daily" ? `<div class="row" style="margin-top:12px"><button class="btn" onclick="startExtra(5)">추가 5문제</button><button class="btn sub" onclick="startExtra(10)">추가 10문제</button><button class="btn sub" onclick="startWrongRetry()">오답 다시풀기</button></div>` : "";
-  result.innerHTML=`<h2>${c}/${currentQuiz.length} 정답</h2>`+currentQuiz.map((q,i)=>`<div class="card"><b>${i+1}. ${escapeHtml(q.topic)} · ${ans[q.id]===q.a?'정답':'오답'}</b><p class="small">정답 ${['①','②','③','④','⑤'][q.a]} · ${escapeHtml(q.ex||'')}</p>${(q.choiceExplanations||[]).length?`<p class="small">${q.choiceExplanations.map((s,j)=>`${['①','②','③','④','⑤'][j]} ${escapeHtml(s)}`).join('<br>')}</p>`:''}</div>`).join('')+more;
+  result.innerHTML=`<h2>${c}/${graded.length} 채점 · 미검증 ${pending}문항</h2>`+currentQuiz.map((q,i)=>`<div class="card"><b>${i+1}. ${escapeHtml(q.topic)} · ${!Number.isInteger(q.a)?'정답 검증 대기':ans[q.id]===q.a?'정답':'오답'}</b><p class="small">${Number.isInteger(q.a)?'정답 '+['①','②','③','④','⑤'][q.a]:'공식 정답 대조 전'} · ${escapeHtml(q.ex||'')}</p>${(q.choiceExplanations||[]).length?`<p class="small">${q.choiceExplanations.map((s,j)=>`${['①','②','③','④','⑤'][j]} ${escapeHtml(s)}`).join('<br>')}</p>`:''}</div>`).join('')+more;
   refresh();
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
