@@ -41,7 +41,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="btn sub" onclick="startExtra(5)">추가 5문제</button>
 <button class="btn sub" onclick="startExtra(10)">추가 10문제</button>
 <button class="btn sub" onclick="startWrongRetry()">오답 다시풀기</button>
-<button class="btn sub" onclick="startPast()">기출문제 보기</button>
+<button class="btn sub" onclick="startPast()">전체 기출</button><select id="pastYear" onchange="if(this.value)startPast(this.value)" aria-label="기출 연도 선택"><option value="">연도 선택</option><option>2014</option><option>2018</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option></select>
 </div>
 <div id="quizBox"></div><button class="btn" onclick="grade()">채점하기</button>
 </div>
@@ -56,7 +56,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="active" onclick="go('home',this)">홈</button><button onclick="go('quiz',this)">문제</button><button onclick="go('theory',this)">이론</button><button onclick="go('wrong',this)">오답</button><button onclick="go('analysis',this)">분석</button><button onclick="go('feedback',this)">피드백</button>
 </nav>
 <script>
-const BUILTIN_VERSION="v6.6";
+const BUILTIN_VERSION="v6.9";
 let data=null, ans={}; let currentQuiz=[]; let quizMode="daily";
 let state=JSON.parse(localStorage.getItem("studyState")||'{"solved":0,"correct":0,"wrong":[]}');
 
@@ -70,7 +70,7 @@ async function boot(){
   if(cached){try{data=JSON.parse(cached)}catch(e){}}
   try{
     const live=await fetchLatest();
-    if(!data || live.version===data.version){data=live;localStorage.setItem("cachedContent",JSON.stringify(live))}
+    if(!data || newer(live.version,data.version)||live.version===data.version){data=live;localStorage.setItem("cachedContent",JSON.stringify(live))}
   }catch(e){}
   if(!data){alert("콘텐츠를 불러오지 못했습니다.");return}
   refresh();startDaily();
@@ -101,9 +101,9 @@ function go(id,btn){
   if(id==="quiz")renderQuiz(); if(id==="wrong")renderWrong(); if(id==="analysis")renderAnalysis(); if(id==="theory")renderTheory("law");
 }
 function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5)}
-function startDaily(){quizMode="daily";ans={};currentQuiz=data.questions.slice(0,10);quizTitle.textContent="오늘의 10문제";result.classList.add("hidden");renderQuiz()}
-function startExtra(n){quizMode="extra";ans={};const pool=data.questions.slice(10).length?data.questions.slice(10):data.questions;currentQuiz=shuffle(pool).slice(0,Math.min(n,pool.length));quizTitle.textContent=`추가 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
-function startPast(){quizMode="past";ans={};currentQuiz=data.questions.filter(q=>q.year);quizTitle.textContent=`실제 기출 ${currentQuiz.length}문제 · 공식 정답 검증 전`;result.classList.add("hidden");renderQuiz()}
+function startDaily(){quizMode="daily";ans={};const checked=data.questions.filter(q=>Number.isInteger(q.a));currentQuiz=shuffle(checked).slice(0,10);quizTitle.textContent="오늘의 10문제";result.classList.add("hidden");renderQuiz()}
+function startExtra(n){quizMode="extra";ans={};const pool=data.questions.filter(q=>Number.isInteger(q.a));currentQuiz=shuffle(pool).slice(0,Math.min(n,pool.length));quizTitle.textContent=`추가 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
+function startPast(year){quizMode="past";ans={};const pool=data.questions.filter(q=>q.year&&(!year||q.year===Number(year)));currentQuiz=pool.sort((a,b)=>a.year-b.year||a.examNo-b.examNo);quizTitle.textContent=`${year?year+"년":"전체"} 실제 기출 ${currentQuiz.length}문제 · 채점 검증 전`;result.classList.add("hidden");renderQuiz()}
 function startWrongRetry(){quizMode="wrong";ans={};if(!state.wrong.length){alert("아직 오답이 없습니다.");return}const ids=[...new Set(state.wrong.map(x=>x.id))];currentQuiz=ids.map(id=>data.questions.find(q=>q.id===id)).filter(Boolean);quizTitle.textContent=`오답 다시풀기 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
 function renderQuiz(){
   quizBox.innerHTML=currentQuiz.map((q,i)=>{
