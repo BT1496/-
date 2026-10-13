@@ -46,7 +46,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <div id="quizBox"></div><button class="btn" onclick="grade()">채점하기</button>
 </div>
 <div id="result" class="card hidden"></div></section>
-<section id="theory" class="view hidden"><div class="card"><h2>이론학습</h2><div class="row"><button class="btn sub" onclick="renderTheory('law')">법령</button><button class="btn sub" onclick="renderTheory('general')">산업안전일반</button><button class="btn sub" onclick="renderTheory('corp')">기업진단·지도</button></div><div id="theoryBox" style="margin-top:12px"></div></div></section>
+<section id="theory" class="view hidden"><div class="card"><h2>이론학습</h2><div class="row"><button class="btn sub" onclick="renderTheory('law')">법령</button><button class="btn sub" onclick="renderTheory('general')">산업안전일반</button><button class="btn sub" onclick="renderTheory('corp')">기업진단·지도</button></div><div id="dailyTheory" style="margin-top:12px"></div><div id="theoryBox" style="margin-top:12px"></div></div></section>
 <section id="wrong" class="view hidden"><div class="card"><h2>오답노트</h2><div id="wrongBox"></div></div></section>
 <section id="analysis" class="view hidden"><div class="card"><h2>취약단원</h2><div id="analysisBox"></div></div></section>
 <section id="feedback" class="view hidden"><div class="card"><h2>피드백 메모</h2><p class="small">API 없이 무료로 운영합니다. 오류를 적고 복사한 뒤 이 ChatGPT 대화에 붙여넣으면 됩니다.</p><textarea id="memo" placeholder="예: 2번 문제 해설의 총공사금액 기준을 다시 확인해줘."></textarea><div class="row" style="margin-top:8px"><button class="btn" onclick="saveMemo()">저장</button><button class="btn sub" onclick="copyMemo()">GPT용 문구 복사</button></div><p id="copyMsg" class="small"></p></div></section>
@@ -131,7 +131,18 @@ function grade(){
   refresh();
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+function renderDailyTheory(){
+ const keys=["law","general","corp"], all=keys.flatMap(k=>(data.theory[k]||[]).map((x,i)=>({k,i,x})));
+ if(!all.length)return;
+ const t=new Date(), start=new Date(t.getFullYear(),0,1), n=Math.floor((new Date(t.getFullYear(),t.getMonth(),t.getDate())-start)/86400000);
+ const offset=Math.floor((new Date(t.getFullYear(),t.getMonth(),t.getDate())-new Date(2026,0,1))/86400000);
+ const today=all[((offset%all.length)+all.length)%all.length];
+ const yday=all[(((offset-1)%all.length)+all.length)%all.length];
+ const names={law:"산업안전보건법령",general:"산업안전일반",corp:"기업진단·지도"};
+ dailyTheory.innerHTML=`<div class="card" style="border:2px solid #246da0"><b>📅 오늘의 추천 이론</b><p class="small">${t.getFullYear()}년 ${t.getMonth()+1}월 ${t.getDate()}일 · ${names[today.k]}</p><h3>${escapeHtml(today.x.title)}</h3><p style="white-space:pre-line;line-height:1.9">${escapeHtml(today.x.body)}</p><p class="small"><b>시험에서 헷갈리는 점:</b> ${escapeHtml(today.x.trap||"")}</p><button class="btn sub" onclick="markTheoryDone('${today.k}',${today.i})">오늘 이론 학습완료</button><hr><b>🔁 어제 이론 복습</b><p class="small">${names[yday.k]} · ${escapeHtml(yday.x.title)}</p><button class="btn sub" onclick="renderTheory('${yday.k}')">어제 단원 찾아보기</button></div>`;
+}
 function renderTheory(k){
+ renderDailyTheory();
   theoryBox.innerHTML=`<p class="small">단원을 눌러 상세 이론을 읽고, 학습완료를 체크하세요. 학습 여부는 이 기기에 저장됩니다.</p>`+(data.theory[k]||[]).map((x,i)=>{const key=k+":"+i;const done=JSON.parse(localStorage.getItem("theoryDone")||"{}")[key];return `<details class="card" style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:800;line-height:1.5">${done?"✅":"📖"} ${escapeHtml(x.title)} <span class="small" style="font-weight:400">· ${done?"완료":"학습하기"}</span></summary><div style="padding-top:12px"><p class="small" style="white-space:pre-line;line-height:1.9">${escapeHtml(x.body)}</p><div style="padding:12px;background:#fff3db;border-radius:10px"><b>⚠️ 시험에서 헷갈리는 점</b><p class="small">${escapeHtml(x.trap||"")}</p></div><button class="btn sub" style="margin-top:12px" onclick="markTheoryDone('${k}',${i})">${done?"학습완료 취소":"이 단원 학습완료"}</button></div></details>`}).join("")
 }
 function markTheoryDone(k,i){
