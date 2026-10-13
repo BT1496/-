@@ -25,9 +25,9 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <header><h1>2027 산업안전지도사 1차</h1><p>한 번 설치 · 문제와 이론은 업데이트로 교체</p></header>
 <main>
 <section id="home" class="view">
-<div class="card"><span class="badge">무료 버전</span><h2 style="margin-top:10px">오늘 10문제 → 채점 → 오답복습</h2>
+<div class="card"><span class="badge">무료 버전</span><h2 style="margin-top:10px">오늘 20문제 → 채점 → 오답복습</h2>
 <div class="stat"><div><span class="small">D-Day</span><b id="dday">-</b></div><div><span class="small">누적</span><b id="solved">0</b></div><div><span class="small">정답률</span><b id="acc">0%</b></div></div>
-<div class="row" style="margin-top:12px"><button class="btn" onclick="go('quiz')">오늘 10문제</button><button class="btn sub" onclick="go('theory')">이론학습</button></div></div>
+<div class="row" style="margin-top:12px"><button class="btn" onclick="go('quiz')">오늘 20문제</button><button class="btn sub" onclick="go('theory')">이론학습</button></div></div>
 <div class="card"><h2>콘텐츠 업데이트</h2><p class="small">현재 <b id="ver"></b> · <span id="upd"></span><br>앱 재설치 없이 문제·해설·이론만 최신 버전으로 교체합니다.</p>
 <div class="row"><button class="btn" onclick="checkUpdate()">업데이트 확인</button><button class="btn sub" onclick="restoreBackup()">이전 버전 복원</button></div><p id="updateMsg" class="small"></p></div>
 <div class="card"><h2>추천 복습</h2><p id="recommend" class="small">문제를 풀면 취약단원을 알려드립니다.</p></div>
@@ -35,9 +35,9 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 
 <section id="quiz" class="view hidden">
 <div class="card">
-<h2 id="quizTitle">오늘의 10문제</h2>
+<h2 id="quizTitle">오늘의 20문제</h2>
 <div class="row" style="margin-bottom:10px">
-<button class="btn sub" onclick="startDaily()">오늘의 10문제</button>
+<button class="btn sub" onclick="startDaily()">오늘의 20문제</button>
 <button class="btn sub" onclick="startExtra(5)">추가 5문제</button>
 <button class="btn sub" onclick="startExtra(10)">추가 10문제</button>
 <button class="btn sub" onclick="startWrongRetry()">오답 다시풀기</button>
@@ -107,7 +107,7 @@ function go(id,btn){
   if(id==="quiz")renderQuiz(); if(id==="wrong")renderWrong(); if(id==="analysis")renderAnalysis(); if(id==="theory")renderTheory("law");
 }
 function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5)}
-function startDaily(){quizMode="daily";ans={};const checked=data.questions.filter(q=>Number.isInteger(q.a));currentQuiz=shuffle(checked).slice(0,10);quizTitle.textContent="오늘의 10문제";result.classList.add("hidden");renderQuiz()}
+function startDaily(){quizMode="daily";ans={};const checked=data.questions.filter(q=>Number.isInteger(q.a));currentQuiz=shuffle(checked).slice(0,20);quizTitle.textContent="오늘의 20문제";result.classList.add("hidden");renderQuiz()}
 function startExtra(n){quizMode="extra";ans={};const pool=data.questions.filter(q=>Number.isInteger(q.a));currentQuiz=shuffle(pool).slice(0,Math.min(n,pool.length));quizTitle.textContent=`추가 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
 function startPast(year){quizMode="past";ans={};const pool=data.questions.filter(q=>q.year&&(!year||q.year===Number(year)));currentQuiz=pool.sort((a,b)=>a.year-b.year||a.examNo-b.examNo);quizTitle.textContent=`${year?year+"년":"전체"} 실제 기출 ${currentQuiz.length}문제 · 채점 검증 전`;result.classList.add("hidden");renderQuiz()}
 function startWrongRetry(){quizMode="wrong";ans={};if(!state.wrong.length){alert("아직 오답이 없습니다.");return}const ids=[...new Set(state.wrong.map(x=>x.id))];currentQuiz=ids.map(id=>data.questions.find(q=>q.id===id)).filter(Boolean);quizTitle.textContent=`오답 다시풀기 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
