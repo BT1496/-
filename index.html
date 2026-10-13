@@ -115,7 +115,7 @@ function renderQuiz(){
   quizBox.innerHTML=currentQuiz.map((q,i)=>{
     const items=q.items?`<table>${q.items.map(x=>`<tr><td>${x}</td></tr>`).join("")}</table>`:"";
     const opts=q.opts.map((o,j)=>`<button class="opt ${ans[q.id]===j?'sel':''}" onclick="ans[${q.id}]=${j};renderQuiz()">${["①","②","③","④","⑤"][j]} ${o}</button>`).join("");
-    return `<div class="card"><div class="small">${q.subject} · ${q.topic}${q.year?` · ${q.year}년 ${q.examNo}번 · 채점 보류`:" · 기존 응용"}</div><div class="qtitle">${i+1}. ${q.q}</div>${items}${opts}</div>`
+    return `<div class="card"><div class="small">${q.subject}${q.year?` · ${q.year}년`:` · ${q.topic}`}</div><div class="qtitle">${i+1}. ${q.q}</div>${items}${opts}</div>`
   }).join("")
 }
 function grade(){
