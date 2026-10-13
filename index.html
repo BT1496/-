@@ -41,7 +41,7 @@ nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid 
 <button class="btn sub" onclick="startExtra(5)">추가 5문제</button>
 <button class="btn sub" onclick="startExtra(10)">추가 10문제</button>
 <button class="btn sub" onclick="startWrongRetry()">오답 다시풀기</button>
-<button class="btn sub" onclick="startPast()">전체 기출</button><select id="pastYear" onchange="if(this.value)startPast(this.value)" aria-label="기출 연도 선택"><option value="">연도 선택</option><option>2014</option><option>2018</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option></select>
+<button class="btn sub" onclick="startPast()">전체 기출</button><button class="btn sub" onclick="location.href='import.html'">내 PDF 가져오기</button><select id="pastYear" onchange="if(this.value)startPast(this.value)" aria-label="기출 연도 선택"><option value="">연도 선택</option><option>2014</option><option>2018</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option></select>
 </div>
 <div id="quizBox"></div><button class="btn" onclick="grade()">채점하기</button>
 </div>
@@ -73,6 +73,12 @@ async function boot(){
     if(!data || newer(live.version,data.version)||live.version===data.version){data=live;localStorage.setItem("cachedContent",JSON.stringify(live))}
   }catch(e){}
   if(!data){alert("콘텐츠를 불러오지 못했습니다.");return}
+  try{
+    const personal=JSON.parse(localStorage.getItem("personalPastQuestions")||"[]");
+    const map=new Map(data.questions.map(q=>[(q.year? q.year+"-"+q.examNo:"existing-"+q.id),q]));
+    for(const q of personal){const k=q.year+"-"+q.examNo;const old=map.get(k);if(old && Number.isInteger(old.a) && !Number.isInteger(q.a))continue;map.set(k,old?{...old,...q}:q)}
+    data.questions=[...map.values()];
+  }catch(e){console.warn("개인 문제 복원 실패",e)}
   refresh();startDaily();
   memo.value=localStorage.getItem("feedbackMemo")||"";
 }
