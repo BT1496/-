@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f4c81">
+<link rel="manifest" href="manifest.webmanifest">
+<title>2027 산업안전지도사 1차</title>
+<style>
+:root{--b:#0f4c81;--bg:#f4f7fb;--card:#fff;--line:#e5eaf0;--muted:#667085;--ok:#087443;--bad:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17202a}
+header{background:linear-gradient(135deg,#0f4c81,#1b6ea8);color:#fff;padding:18px 16px;position:sticky;top:0;z-index:5}header h1{font-size:20px;margin:0}header p{font-size:12px;margin:5px 0 0;opacity:.9}
+main{max-width:760px;margin:auto;padding:14px 14px 90px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 3px 14px #0000000b}
+h2{font-size:18px;margin:0 0 12px}.small{font-size:13px;color:var(--muted);line-height:1.55}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#eaf2fa;color:var(--b);font-size:12px;font-weight:800}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat div{background:#f8fafc;border-radius:13px;padding:11px;text-align:center}.stat b{display:block;font-size:19px}
+button{cursor:pointer}.btn{border:0;border-radius:11px;padding:11px 13px;background:var(--b);color:white;font-weight:800}.sub{background:#eaf2fa;color:var(--b)}.row{display:flex;gap:8px;flex-wrap:wrap}.hidden{display:none}
+.qtitle{font-weight:800;line-height:1.5;margin:8px 0}.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px;margin:7px 0}.opt.sel{border-color:var(--b);background:#eef6ff}
+textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;min-height:130px;font:inherit}
+table{width:100%;border-collapse:collapse;font-size:14px}td{border:1px solid var(--line);padding:8px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);z-index:10}nav button{border:0;background:#fff;padding:11px 2px;font-size:11px;color:#667085}nav button.active{color:var(--b);font-weight:800}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+<header><h1>2027 산업안전지도사 1차</h1><p>한 번 설치 · 문제와 이론은 업데이트로 교체</p></header>
+<main>
+<section id="home" class="view">
+<div class="card"><span class="badge">무료 버전</span><h2 style="margin-top:10px">오늘 10문제 → 채점 → 오답복습</h2>
+<div class="stat"><div><span class="small">D-Day</span><b id="dday">-</b></div><div><span class="small">누적</span><b id="solved">0</b></div><div><span class="small">정답률</span><b id="acc">0%</b></div></div>
+<div class="row" style="margin-top:12px"><button class="btn" onclick="go('quiz')">오늘 10문제</button><button class="btn sub" onclick="go('theory')">이론학습</button></div></div>
+<div class="card"><h2>콘텐츠 업데이트</h2><p class="small">현재 <b id="ver"></b> · <span id="upd"></span><br>앱 재설치 없이 문제·해설·이론만 최신 버전으로 교체합니다.</p>
+<div class="row"><button class="btn" onclick="checkUpdate()">업데이트 확인</button><button class="btn sub" onclick="restoreBackup()">이전 버전 복원</button></div><p id="updateMsg" class="small"></p></div>
+<div class="card"><h2>추천 복습</h2><p id="recommend" class="small">문제를 풀면 취약단원을 알려드립니다.</p></div>
+</section>
+
+<section id="quiz" class="view hidden">
+<div class="card">
+<h2 id="quizTitle">오늘의 10문제</h2>
+<div class="row" style="margin-bottom:10px">
+<button class="btn sub" onclick="startDaily()">오늘의 10문제</button>
+<button class="btn sub" onclick="startExtra(5)">추가 5문제</button>
+<button class="btn sub" onclick="startExtra(10)">추가 10문제</button>
+<button class="btn sub" onclick="startWrongRetry()">오답 다시풀기</button>
+</div>
+<div id="quizBox"></div><button class="btn" onclick="grade()">채점하기</button>
+</div>
+<div id="result" class="card hidden"></div></section>
+<section id="theory" class="view hidden"><div class="card"><h2>이론학습</h2><div class="row"><button class="btn sub" onclick="renderTheory('law')">법령</button><button class="btn sub" onclick="renderTheory('general')">산업안전일반</button><button class="btn sub" onclick="renderTheory('corp')">기업진단·지도</button></div><div id="theoryBox" style="margin-top:12px"></div></div></section>
+<section id="wrong" class="view hidden"><div class="card"><h2>오답노트</h2><div id="wrongBox"></div></div></section>
+<section id="analysis" class="view hidden"><div class="card"><h2>취약단원</h2><div id="analysisBox"></div></div></section>
+<section id="feedback" class="view hidden"><div class="card"><h2>피드백 메모</h2><p class="small">API 없이 무료로 운영합니다. 오류를 적고 복사한 뒤 이 ChatGPT 대화에 붙여넣으면 됩니다.</p><textarea id="memo" placeholder="예: 2번 문제 해설의 총공사금액 기준을 다시 확인해줘."></textarea><div class="row" style="margin-top:8px"><button class="btn" onclick="saveMemo()">저장</button><button class="btn sub" onclick="copyMemo()">GPT용 문구 복사</button></div><p id="copyMsg" class="small"></p></div></section>
+<section id="about" class="view hidden"><div class="card"><h2>사용 방식</h2><p class="small">① 앱은 한 번만 홈 화면에 추가<br>② 문제·이론 수정 시 배포된 content/latest.json만 교체<br>③ 사용자는 ‘업데이트 확인’ 클릭<br>④ 정답률·오답노트·메모는 그대로 유지</p></div></section>
+</main>
+<nav>
+<button class="active" onclick="go('home',this)">홈</button><button onclick="go('quiz',this)">문제</button><button onclick="go('theory',this)">이론</button><button onclick="go('wrong',this)">오답</button><button onclick="go('analysis',this)">분석</button><button onclick="go('feedback',this)">피드백</button>
+</nav>
+<script>
+const BUILTIN_VERSION="v5.0";
+let data=null, ans={}; let currentQuiz=[]; let quizMode="daily";
+let state=JSON.parse(localStorage.getItem("studyState")||'{"solved":0,"correct":0,"wrong":[]}');
+
+async function fetchLatest(){
+  const r=await fetch("content/latest.json?ts="+Date.now(),{cache:"no-store"});
+  if(!r.ok) throw new Error("업데이트 파일을 불러오지 못했습니다.");
+  return await r.json();
+}
+async function boot(){
+  const cached=localStorage.getItem("cachedContent");
+  if(cached){try{data=JSON.parse(cached)}catch(e){}}
+  try{
+    const live=await fetchLatest();
+    if(!data || live.version===data.version){data=live;localStorage.setItem("cachedContent",JSON.stringify(live))}
+  }catch(e){}
+  if(!data){alert("콘텐츠를 불러오지 못했습니다.");return}
+  refresh();startDaily();
+  memo.value=localStorage.getItem("feedbackMemo")||"";
+}
+function versionParts(v){return String(v).replace("v","").split(".").map(Number)}
+function newer(a,b){const A=versionParts(a),B=versionParts(b);return (A[0]>B[0])||(A[0]===B[0]&&(A[1]||0)>(B[1]||0))}
+async function checkUpdate(){
+  updateMsg.textContent="업데이트 확인 중...";
+  try{
+    const live=await fetchLatest();
+    if(newer(live.version,data.version)){
+      localStorage.setItem("backupContent",JSON.stringify(data));
+      data=live; localStorage.setItem("cachedContent",JSON.stringify(data));
+      updateMsg.innerHTML=`<span class="ok">${data.version} 업데이트 완료. 학습기록은 유지됩니다.</span>`;
+      refresh();startDaily();
+    }else updateMsg.textContent="현재 최신 버전입니다.";
+  }catch(e){updateMsg.innerHTML=`<span class="bad">${e.message}</span>`}
+}
+function restoreBackup(){
+  const b=localStorage.getItem("backupContent");
+  if(!b){updateMsg.textContent="복원할 이전 버전이 없습니다.";return}
+  data=JSON.parse(b);localStorage.setItem("cachedContent",JSON.stringify(data));refresh();renderQuiz();updateMsg.textContent="이전 콘텐츠로 복원했습니다.";
+}
+function go(id,btn){
+  document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");
+  if(id==="quiz")renderQuiz(); if(id==="wrong")renderWrong(); if(id==="analysis")renderAnalysis(); if(id==="theory")renderTheory("law");
+}
+function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5)}
+function startDaily(){quizMode="daily";ans={};currentQuiz=data.questions.slice(0,10);quizTitle.textContent="오늘의 10문제";result.classList.add("hidden");renderQuiz()}
+function startExtra(n){quizMode="extra";ans={};const pool=data.questions.slice(10).length?data.questions.slice(10):data.questions;currentQuiz=shuffle(pool).slice(0,Math.min(n,pool.length));quizTitle.textContent=`추가 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
+function startWrongRetry(){quizMode="wrong";ans={};if(!state.wrong.length){alert("아직 오답이 없습니다.");return}const ids=[...new Set(state.wrong.map(x=>x.id))];currentQuiz=ids.map(id=>data.questions.find(q=>q.id===id)).filter(Boolean);quizTitle.textContent=`오답 다시풀기 ${currentQuiz.length}문제`;result.classList.add("hidden");renderQuiz()}
+function renderQuiz(){
+  quizBox.innerHTML=currentQuiz.map((q,i)=>{
+    const items=q.items?`<table>${q.items.map(x=>`<tr><td>${x}</td></tr>`).join("")}</table>`:"";
+    const opts=q.opts.map((o,j)=>`<button class="opt ${ans[q.id]===j?'sel':''}" onclick="ans[${q.id}]=${j};renderQuiz()">${["①","②","③","④","⑤"][j]} ${o}</button>`).join("");
+    return `<div class="card"><div class="small">${q.subject} · ${q.topic}</div><div class="qtitle">${i+1}. ${q.q}</div>${items}${opts}</div>`
+  }).join("")
+}
+function grade(){
+  let c=0,w=[];
+  currentQuiz.forEach(q=>{if(ans[q.id]===q.a)c++;else w.push(q)});
+  state.solved+=currentQuiz.length;state.correct+=c;
+  w.forEach(q=>{const old=state.wrong.find(x=>x.id===q.id); if(old){old.count=(old.count||1)+1}else state.wrong.push({...q,count:1})});
+  localStorage.setItem("studyState",JSON.stringify(state));
+  result.classList.remove("hidden");
+  const more = quizMode==="daily" ? `<div class="row" style="margin-top:12px"><button class="btn" onclick="startExtra(5)">추가 5문제</button><button class="btn sub" onclick="startExtra(10)">추가 10문제</button><button class="btn sub" onclick="startWrongRetry()">오답 다시풀기</button></div>` : "";
+  result.innerHTML=`<h2>${c}/${currentQuiz.length} 정답</h2>`+currentQuiz.map((q,i)=>`<div class="card"><b>${i+1}. ${escapeHtml(q.topic)} · ${ans[q.id]===q.a?'정답':'오답'}</b><p class="small">정답 ${['①','②','③','④','⑤'][q.a]} · ${escapeHtml(q.ex||'')}</p>${(q.choiceExplanations||[]).length?`<p class="small">${q.choiceExplanations.map((s,j)=>`${['①','②','③','④','⑤'][j]} ${escapeHtml(s)}`).join('<br>')}</p>`:''}</div>`).join('')+more;
+  refresh();
+}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+function renderTheory(k){
+  theoryBox.innerHTML=`<p class="small">단원을 눌러 상세 이론을 읽고, 학습완료를 체크하세요. 학습 여부는 이 기기에 저장됩니다.</p>`+(data.theory[k]||[]).map((x,i)=>{const key=k+":"+i;const done=JSON.parse(localStorage.getItem("theoryDone")||"{}")[key];return `<details class="card" style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:800;line-height:1.5">${done?"✅":"📖"} ${escapeHtml(x.title)} <span class="small" style="font-weight:400">· ${done?"완료":"학습하기"}</span></summary><div style="padding-top:12px"><p class="small" style="white-space:pre-line;line-height:1.9">${escapeHtml(x.body)}</p><div style="padding:12px;background:#fff3db;border-radius:10px"><b>⚠️ 시험에서 헷갈리는 점</b><p class="small">${escapeHtml(x.trap||"")}</p></div><button class="btn sub" style="margin-top:12px" onclick="markTheoryDone('${k}',${i})">${done?"학습완료 취소":"이 단원 학습완료"}</button></div></details>`}).join("")
+}
+function markTheoryDone(k,i){
+ const done=JSON.parse(localStorage.getItem("theoryDone")||"{}");const key=k+":"+i;done[key]=!done[key];localStorage.setItem("theoryDone",JSON.stringify(done));renderTheory(k)
+}
+function renderWrong(){wrongBox.innerHTML=state.wrong.length?state.wrong.map(q=>`<div class="card"><b>${q.subject} · ${q.topic}</b><p>${q.q}</p><p class="small">${q.ex}</p><span class="badge">${q.count||1}회 오답</span></div>`).join(""):`<p class="small">아직 오답이 없습니다.</p>`}
+function renderAnalysis(){
+  const m={};state.wrong.forEach(q=>m[q.topic]=(m[q.topic]||0)+(q.count||1));
+  analysisBox.innerHTML=Object.keys(m).length?Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="card"><b>${k}</b><p class="small">${v}회 오답 · 우선복습 추천</p></div>`).join(""):`<p class="small">문제를 먼저 풀어주세요.</p>`;
+}
+function saveMemo(){localStorage.setItem("feedbackMemo",memo.value);copyMsg.textContent="기기에 저장했습니다."}
+async function copyMemo(){
+  const text=`산업안전지도사 앱 피드백\\n현재 콘텐츠: ${data.version}\\n수정 요청:\\n${memo.value}\\n\\n이 내용을 검토해서 수정이 필요하면 latest.json 업데이트본을 만들어줘.`;
+  try{await navigator.clipboard.writeText(text);copyMsg.textContent="복사했습니다. 이 ChatGPT 대화에 붙여넣으세요."}catch(e){copyMsg.textContent="복사가 막혔습니다. 메모 내용을 직접 복사해주세요."}
+}
+function refresh(){
+  const days=Math.ceil((new Date(data.examDate)-new Date())/86400000);
+  dday.textContent=days>0?`D-${days}`:"-";solved.textContent=state.solved;acc.textContent=state.solved?Math.round(state.correct/state.solved*100)+"%":"0%";
+  ver.textContent=data.version;upd.textContent=data.updated;
+  recommend.textContent=state.wrong.length?`최근 취약단원: ${state.wrong[state.wrong.length-1].topic}`:"문제를 풀면 취약단원을 알려드립니다.";
+}
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+boot();
+</script>
+</body></html>
