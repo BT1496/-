@@ -144,13 +144,20 @@ function renderDailyTheory(){
 function renderTheory(k){
  if(k==="law"){
   dailyTheory.innerHTML="";
-  const laws=[
-   ["산업안전보건법","https://www.law.go.kr/법령/산업안전보건법"],
-   ["산업안전보건법 시행령","https://www.law.go.kr/법령/산업안전보건법시행령"],
-   ["산업안전보건법 시행규칙","https://www.law.go.kr/법령/산업안전보건법시행규칙"],
-   ["산업안전보건기준에 관한 규칙","https://www.law.go.kr/법령/산업안전보건기준에관한규칙"]
+  const mapping=[
+   ["제15조","안전보건관리체제와 각 담당자의 역할","【1항 각 호를 문장 그대로 이해하기】"],
+   ["제24조","산업안전보건위원회의 구성과 기능","[항·호별 시험 해설]"],
+   ["제29조","안전보건교육의 목적과 구분","[항·호별 시험 해설]"],
+   ["제36조","위험성평가의 절차","【1항을 문장별로 분해】"],
+   ["제57조","산업재해 발생 보고 및 기록","[항별 시험 해설]"]
   ];
-  theoryBox.innerHTML='<p class="small">법령 이론은 요약문 대신 국가법령정보센터의 실제 조문 전문을 확인합니다. 각 법령을 열면 모든 조·항·호와 별표를 볼 수 있습니다. 인터넷 연결이 필요합니다.</p>'+laws.map(([name,url])=>'<div class="card"><b>'+name+'</b><p class="small">전체 조문·항·호 및 관련 별표를 공식 원문으로 확인하세요.</p><a class="btn" style="display:inline-block;text-decoration:none" href="'+url+'" target="_blank" rel="noopener noreferrer">법령 원문 전체 보기 ↗</a></div>').join('')+'<p class="small">※ 앱에 남아 있는 종전 요약 해설은 법령 원문으로 간주하지 않습니다. 현재 화면은 해설보다 공식 조문 열람을 우선합니다.</p>';
+  theoryBox.innerHTML='<p class="small">앱 안에서 법령 문장을 직접 읽습니다. 현재 원문 형태로 저장된 5개 조문만 수록했으며, 시행령·시행규칙·별표를 포함한 전체 원문은 아직 미수록입니다. 수록 문구도 현행 법령과 최종 대조 전입니다.</p>'+mapping.map(([num,title,delimiter])=>{
+    const unit=data.theory.law.find(x=>x.title===title);
+    if(!unit)return '';
+    let original=unit.body.split(delimiter)[0].trim();
+    original=original.split('[국가법령정보센터 원문]')[0].trim();
+    return '<details class="card"><summary style="cursor:pointer;font-weight:800">'+escapeHtml(num+' '+title)+'</summary><div style="white-space:pre-wrap;line-height:1.85;padding-top:14px">'+escapeHtml(original)+'</div></details>';
+  }).join('');
   return;
  }
  renderDailyTheory();
