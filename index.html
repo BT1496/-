@@ -160,8 +160,8 @@ async function openLawText(){
  try{
   const res=await fetch("laws/"+id+".md");if(!res.ok)throw new Error("원문 파일을 불러오지 못했습니다.");
   const md=await res.text();
-  const txt=md.replace(/^---\\s*\\n[\\s\\S]*?\\n---\\s*\\n/,"").trim();
-  const parts=txt.split(/(?=^#{4,6} 제\\d+조(?:의\\d+)?\\b)/m).filter(Boolean);
+  const txt=md.replace(/^---\s*\n[\s\S]*?\n---\s*\n/,"").trim();
+  const parts=txt.split(/(?=^#{4,6} 제\d+조(?:의\d+)?\s*\()/m).filter(Boolean);
   lawSections=parts.length>2?parts:[txt];lawPage=0;
   filterLawText();
  }catch(err){info.textContent=err.message;}
