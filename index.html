@@ -211,7 +211,7 @@ async function toggleLawAnnex(){
  panel.classList.toggle("hidden");if(panel.classList.contains("hidden"))return;
  if(!annexData){panel.textContent="별표·별지 목록을 불러오는 중…";try{const r=await fetch("laws/annex-manifest.json");if(!r.ok)throw Error("목록을 불러올 수 없습니다");annexData=await r.json();}catch(e){panel.textContent=e.message;return}}
  const id=document.getElementById("lawSelect").value;const items=annexData.files[id]?.items||[];
- panel.innerHTML='<p class="small">별표·별지 '+items.length+'개 목차입니다. 첨부 원문 PDF 자체는 아직 앱에 복사되지 않았습니다. 각 항목의 공식 PDF가 앱 화면 안에 표시되는지 확인할 수 있습니다(인터넷 필요).</p><input id="annexQuery" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px" placeholder="별표 제목 검색" oninput="renderAnnexList()"><div id="annexResults"></div><div id="annexViewer"></div>';
+ panel.innerHTML='<p class="small">별표·별지 '+items.length+'개 목차입니다. 공식 첨부 PDF는 아직 앱 저장소에 포함되지 않았습니다. 가지고 계신 원본 PDF를 선택해 이 기기에 별도로 저장할 수 있습니다.</p><input id="annexQuery" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px" placeholder="별표 제목 검색" oninput="renderAnnexList()"><div id="annexResults"></div><div id="annexViewer"></div>';
  renderAnnexList();
 }
 function renderAnnexList(){
@@ -221,10 +221,39 @@ function renderAnnexList(){
  const matches=items.map((x,i)=>({...x,i})).filter(x=>!q||lawNormalize(x.title).includes(lawNormalize(q)));
  out.innerHTML='<p class="small">'+matches.length+'개 일치</p>'+matches.map(x=>'<button class="btn sub" style="text-align:left;margin:3px" onclick="viewAnnex('+x.i+')">'+escapeHtml(x.kind+' '+x.no+' '+x.title)+'</button>').join("");
 }
-function viewAnnex(i){
+let annexObjectUrl=null;
+async function annexDb(){
+ return new Promise((ok,bad)=>{
+  const r=indexedDB.open("safetyLawAnnexFiles",1);
+  r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("files"))r.result.createObjectStore("files")};
+  r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error);
+ });
+}
+async function annexPut(key,file){
+ const db=await annexDb();
+ return new Promise((ok,bad)=>{const t=db.transaction("files","readwrite");t.objectStore("files").put(file,key);t.oncomplete=()=>{db.close();ok()};t.onerror=()=>bad(t.error)});
+}
+async function annexGet(key){
+ const db=await annexDb();
+ return new Promise((ok,bad)=>{const t=db.transaction("files","readonly"),r=t.objectStore("files").get(key);r.onsuccess=()=>{db.close();ok(r.result)};r.onerror=()=>bad(r.error)});
+}
+async function saveAnnexLocal(){
+ const id=document.getElementById("lawSelect")?.value,number=Number(document.getElementById("annexActive")?.value);
+ const f=document.getElementById("annexFile")?.files?.[0];if(!f||!id||!Number.isInteger(number))return;
+ if(f.type!=="application/pdf"&&!f.name.toLowerCase().endsWith(".pdf")){alert("PDF 파일을 선택해 주세요.");return}
+ try{await annexPut(id+":"+number,f);await viewAnnex(number)}catch(e){alert("파일 저장 실패: "+e.message)}
+}
+async function viewAnnex(i){
  const id=document.getElementById("lawSelect")?.value||"law",item=annexData?.files[id]?.items[i],node=document.getElementById("annexViewer");
  if(!node||!item)return;
- node.innerHTML='<h3>'+escapeHtml(item.kind+' '+item.no+' '+item.title)+'</h3><p class="small">현재는 국가법령정보센터 PDF를 앱 안에서 표시합니다. 파일을 앱 자체에 복사한 상태는 아닙니다.</p><iframe title="별표 원문 PDF" style="width:100%;height:70vh;border:1px solid #ddd" src="'+encodeURI(item.pdf)+'"></iframe>';
+ if(annexObjectUrl){URL.revokeObjectURL(annexObjectUrl);annexObjectUrl=null;}
+ let file;try{file=await annexGet(id+":"+i)}catch(e){}
+ const available=!!file;
+ node.innerHTML='<input type="hidden" id="annexActive" value="'+i+'"><h3>'+escapeHtml(item.kind+' '+item.no+' '+item.title)+'</h3>'+
+ '<p class="small">'+(available?'이 기기에 저장된 PDF 원문입니다.':'PDF 원문은 아직 앱 내부에 저장되지 않았습니다. 공식 원본 PDF를 가져오려면 아래에서 파일을 선택하세요.')+'</p>'+
+ '<input id="annexFile" type="file" accept="application/pdf,.pdf" aria-label="원문 PDF 파일 선택"> <button class="btn sub" onclick="saveAnnexLocal()">이 기기에 원문 저장</button>'+
+ '<div id="annexPreview"></div>';
+ if(available){annexObjectUrl=URL.createObjectURL(file);document.getElementById("annexPreview").innerHTML='<iframe title="저장된 별표 원문" style="width:100%;height:70vh;border:1px solid #ddd;margin-top:12px" src="'+annexObjectUrl+'"></iframe>'}
 }
 function markTheoryDone(k,i){
  const done=JSON.parse(localStorage.getItem("theoryDone")||"{}");const key=k+":"+i;done[key]=!done[key];localStorage.setItem("theoryDone",JSON.stringify(done));renderTheory(k)
