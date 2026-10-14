@@ -155,7 +155,7 @@ let lawSections=[], lawPage=0, lawRequest=0;
 const legalTopics=[
  ["산재·중대재해","law","제2조"],["안전보건관리책임자","law","제15조"],["안전관리자","law","제17조"],
  ["산업안전보건위원회","law","제24조"],["교육","law","제29조"],["위험성평가","law","제36조"],
- ["유해위험방지계획서","law","제42조"],["공정안전보고서","law","제44조"],["산업재해 보고","law","제57조"],
+ ["유해위험방지계획서","law","제42조"],["계획서 이행확인","law","제43조"],["공정안전보고서","law","제44조"],["산업재해 보고","law","제57조"],
  ["도급인 안전조치","law","제63조"],["안전관리자 선임기준","decree","제16조"],
  ["산안위 구성·회의","decree","제34조"],["계획서 제출 대상","decree","제42조"],
  ["위험성평가 시행규칙","enforcement-rule","제37조"],["근로자 참여","enforcement-rule","제37조의2"],
@@ -190,7 +190,7 @@ async function openLawText(){
   filterLawText();
  }catch(err){if(request===lawRequest)info.textContent=err.message;}
 }
-function jumpLawArticle(n){chooseLegalTopic(n===42?6:n===43?6:n===44?7:0)}
+function jumpLawArticle(n){const i=legalTopics.findIndex(x=>x[1]==="law"&&x[2]==="제"+n+"조");if(i>=0)chooseLegalTopic(i)}
 function lawNormalize(s){return String(s).normalize("NFKC").replace(/[\s·ㆍ・\-–—]/g,"").toLowerCase()}
 function filterLawText(page=0){
  const query=document.getElementById("lawQuery")?.value.trim()||"";
