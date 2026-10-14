@@ -144,7 +144,7 @@ function renderDailyTheory(){
 function renderTheory(k){
  if(k==="law"){
   dailyTheory.innerHTML="";
-  theoryBox.innerHTML='<p class="small"><b>법령 전체 원문을 앱 안에서 열람합니다.</b> 총 4개 법령의 모든 조문이 저장되어 있습니다. 법률은 2027-01-08 시행 예정본이므로 현재 적용 조문과 다를 수 있습니다. 별표 첨부파일은 아직 포함하지 않습니다.</p><select id="lawSelect" style="width:100%;padding:13px;border:1px solid #ddd;border-radius:10px" onchange="openLawText()"><option value="law">산업안전보건법 (2027.1.8 시행 예정)</option><option value="decree">산업안전보건법 시행령</option><option value="enforcement-rule">산업안전보건법 시행규칙</option><option value="safety-standards">산업안전보건기준에 관한 규칙</option></select><input id="lawQuery" style="width:100%;padding:12px;margin-top:8px;border:1px solid #ddd;border-radius:10px" placeholder="조문 검색 (예: 위험성평가, 제36조)" oninput="filterLawText()"><div id="lawInfo" class="small" style="margin:12px 0"></div><div id="lawPages" class="row"></div><div id="lawContent"></div>';
+  theoryBox.innerHTML='<p class="small"><b>법령 전체 원문을 앱 안에서 열람합니다.</b> 총 4개 법령의 모든 조문이 저장되어 있습니다. 법률은 2027-01-08 시행 예정본이므로 현재 적용 조문과 다를 수 있습니다. 별표 첨부파일은 아직 포함하지 않습니다.</p><select id="lawSelect" style="width:100%;padding:13px;border:1px solid #ddd;border-radius:10px" onchange="openLawText()"><option value="law">산업안전보건법 (2027.1.8 시행 예정)</option><option value="decree">산업안전보건법 시행령</option><option value="enforcement-rule">산업안전보건법 시행규칙</option><option value="safety-standards">산업안전보건기준에 관한 규칙</option></select><input id="lawQuery" style="width:100%;padding:12px;margin-top:8px;border:1px solid #ddd;border-radius:10px" placeholder="조문 검색 (예: 유해위험방지계획서, 제42조)" oninput="filterLawText()"><div class="row" style="margin:10px 0"><button class="btn sub" onclick="jumpLawArticle(42)">유해위험방지계획서 제42조</button><button class="btn sub" onclick="jumpLawArticle(43)">제43조</button><button class="btn sub" onclick="jumpLawArticle(44)">공정안전보고서 제44조</button></div><div id="lawInfo" class="small" style="margin:12px 0"></div><div id="lawPages" class="row"></div><div id="lawContent"></div>';
   openLawText();
   return;
  }
@@ -166,9 +166,16 @@ async function openLawText(){
   filterLawText();
  }catch(err){info.textContent=err.message;}
 }
+function jumpLawArticle(n){
+ const select=document.getElementById("lawSelect"),query=document.getElementById("lawQuery");
+ if(!select||!query)return;
+ if(select.value!=="law"){select.value="law";openLawText().then(()=>{query.value="제"+n+"조";filterLawText()});return}
+ query.value="제"+n+"조";filterLawText();
+}
+function lawNormalize(s){return String(s).normalize("NFKC").replace(/[\\s·ㆍ・\\-–—]/g,"").toLowerCase()}
 function filterLawText(page=0){
  const query=document.getElementById("lawQuery")?.value.trim()||"";
- const list=lawSections.filter(x=>!query||x.includes(query));
+ const norm=lawNormalize(query);const list=lawSections.filter(x=>!norm||lawNormalize(x).includes(norm));
  lawPage=Math.max(0,Math.min(Number(page)||0,Math.max(0,Math.ceil(list.length/10)-1)));
  const info=document.getElementById("lawInfo"),body=document.getElementById("lawContent"),nav=document.getElementById("lawPages");
  if(!info||!body||!nav)return;
