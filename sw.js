@@ -1,5 +1,5 @@
-const CACHE="safety-v5.3-shell";
-const SHELL=["./","index.html","manifest.webmanifest","content/latest.json"];
+const CACHE="safety-v8.1-law-shell";
+const SHELL=["./","index.html","manifest.webmanifest","content/latest.json","laws/law.md","laws/decree.md","laws/enforcement-rule.md","laws/safety-standards.md"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
 self.addEventListener("fetch",e=>{
