@@ -1,6 +1,6 @@
-const CACHE='jidosa-pc-v9-20261018';
+const CACHE='jidosa-pc-v9-20261018-law1';
 const SHARED=new URL('../shared-v9/',self.location).pathname;
-const STATIC=['./','./index.html','./manifest.webmanifest','../shared-v9/core.js','../shared-v9/style.css','../shared-v9/app.js','../shared-v9/course.js','../shared-v9/laws.js','../shared-v9/icon.svg'];
+const STATIC=['./','./index.html','./manifest.webmanifest','../shared-v9/core.js','../shared-v9/style.css','../shared-v9/app.js','../shared-v9/course.js','../shared-v9/history.js','../shared-v9/laws.js','../shared-v9/icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('jidosa-pc-v9-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin)return;if(!u.pathname.startsWith(SHARED)&&!u.pathname.startsWith(new URL('./',self.location).pathname))return;e.respondWith(fetch(e.request).then(r=>{if(r.ok){const clone=r.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));}return r;}).catch(()=>caches.match(e.request).then(r=>r||(e.request.mode==='navigate'?caches.match('./index.html'):Response.error()))));});

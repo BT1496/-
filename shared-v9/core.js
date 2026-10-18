@@ -31,7 +31,7 @@
   function answerMatches(q,choice){return (Array.isArray(q.answer)?q.answer:[q.answer]).includes(choice);}
   function filterQuestions(bank,f,records){
     const term=(f.search||'').trim().toLowerCase();
-    return bank.filter(q=>(!f.subject||q.subject===f.subject)&&(!f.year||q.year===Number(f.year))&&(!f.topic||q.topic===f.topic)&&(!term||[q.text,q.topic,q.year,q.no].join(' ').toLowerCase().includes(term))&&(!f.mode||f.mode==='all'||(f.mode==='wrong'&&records[q.id]?.attempts>0&&records[q.id]?.correct===false)||(f.mode==='starred'&&records[q.id]?.starred)||(f.mode==='unseen'&&!records[q.id]?.attempts)));
+    return bank.filter(q=>(!f.subject||q.subject===f.subject)&&(!f.year||q.year===Number(f.year))&&(!f.topic||q.topic===f.topic)&&(!term||[q.text,q.topic,q.year,q.no].join(' ').toLowerCase().includes(term))&&(!f.mode||f.mode==='all'||(f.mode==='wrong'&&records[q.id]?.attempts>0&&records[q.id]?.correct===false)||(f.mode==='starred'&&records[q.id]?.starred)||(f.mode==='unseen'&&!records[q.id]?.attempts)||(f.mode==='law-reviewed'&&q.lawReview==='verified')||(f.mode==='law-pending'&&q.lawReview==='pending')));
   }
   const api={SUBJECTS,validateCourse,mergeCourses,frequency,answerMatches,filterQuestions};root.StudyCore=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
