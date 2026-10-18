@@ -1,6 +1,6 @@
 (async function(){
  'use strict';
- const C=StudyCore,$=s=>document.querySelector(s),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const C=StudyCore,$=s=>document.querySelector(s),E=s=>String(s??'').replace(/\ue09e/g,'β').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const ASSET='../shared-v9/',KEY='jidosa-study-v9',NUM=['①','②','③','④','⑤'];
  let historyData=null,historyError='';
  try{historyData=await window.STUDY_HISTORY_READY;}catch(e){historyError='과년도 문제를 불러오지 못했습니다. 최신 Safari·Chrome·Edge에서 새로고침해 주세요.';console.error(e);}
