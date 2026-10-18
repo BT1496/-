@@ -5,9 +5,10 @@ const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
  const caches={open:async()=>({addAll:async urls=>{installed=urls;urls.forEach(u=>cache.set(new URL(u,base).href,response))},put:async()=>{}}),keys:async()=>[],match:async request=>cache.get(new URL(typeof request==='string'?request:request.url,base).href)};
  const base=`https://bt1496.github.io/-/${layout}-v9/`;
  const ctx={URL,Promise,Response,caches,fetch:async()=>{throw new Error('offline')},self:{location:new URL(base),addEventListener:(event,handler)=>handlers[event]=handler,skipWaiting(){},clients:{claim(){}}}};
- vm.runInNewContext(fs.readFileSync(`${layout}-v9/sw.js`,'utf8'),ctx);
+ vm.runInNewContext(fs.readFileSync(require('path').join(__dirname,'..',`${layout}-v9/sw.js`),'utf8'),ctx);
  let pending;handlers.install({waitUntil:p=>pending=p});await pending;
- for(const asset of ['../shared-v9/app.js','../shared-v9/core.js','../shared-v9/course.js','../shared-v9/history.js','../shared-v9/laws.js']){assert.ok(installed.includes(asset));let result;handlers.fetch({request:{url:new URL(asset,base).href,method:'GET'},respondWith:p=>result=p});assert.equal(await result,response)}
+ assert.equal(installed.filter(x=>x.includes('/annexes/')).length,81);
+ for(const asset of ['../shared-v9/app.js','../shared-v9/core.js','../shared-v9/course.js','../shared-v9/history.js','../shared-v9/laws.js','../shared-v9/annexes.js','../shared-v9/annexes/enforcement-rule-4.json','../shared-v9/annexes/enforcement-rule-24.json','../shared-v9/annexes/safety-standards-18.json']){assert.ok(installed.includes(asset));let result;handlers.fetch({request:{url:new URL(asset,base).href,method:'GET'},respondWith:p=>result=p});assert.equal(await result,response)}
  let result;handlers.fetch({request:{url:base+'index.html',method:'GET',mode:'navigate'},respondWith:p=>result=p});assert.equal(await result,response);
  console.log(layout+': offline navigation and question/theory/law assets passed');
 }})().catch(e=>{console.error(e);process.exit(1)});
