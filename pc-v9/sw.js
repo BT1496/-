@@ -1,4 +1,4 @@
-const CACHE='jidosa-pc-v9-20261018-textbook1';
+const CACHE='jidosa-pc-v9-20261018-updated-date1';
 const SHARED=new URL('../shared-v9/',self.location).pathname;
 const STATIC=['./','./index.html','./manifest.webmanifest','../shared-v9/core.js','../shared-v9/style.css','../shared-v9/app.js','../shared-v9/course.js','../shared-v9/history.js','../shared-v9/laws.js','../shared-v9/icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).then(()=>self.skipWaiting())));
