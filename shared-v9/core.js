@@ -9,7 +9,8 @@
       ids.add(String(q.id));
       if(q.answer!=null&&(!Array.isArray(q.answer)?![1,2,3,4,5].includes(q.answer):!q.answer.every(a=>[1,2,3,4,5].includes(a))))throw new Error('정답 번호가 올바르지 않습니다.');
       if(q.options&&q.options.length!==5)throw new Error('선택지는 다섯 개여야 합니다.');
-      for(const src of [...(q.questionImages||[]),...(q.explanationImages||[])]){
+      for(const field of ['questionImages','explanationImages','textbookExplanationImages'])if(q[field]!=null&&!Array.isArray(q[field]))throw new Error('이미지 목록 형식이 올바르지 않습니다.');
+      for(const src of [...(q.questionImages||[]),...(q.explanationImages||[]),...(q.textbookExplanationImages||[])]){
         if(!/^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(src)&&!/^assets\/[a-zA-Z0-9_.\/-]+\.(webp|png)$/.test(src))throw new Error('허용하지 않는 문제 이미지입니다.');
       }
     }
