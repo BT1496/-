@@ -50,7 +50,17 @@
  function qImage(src,label='문제 원문'){return `<button class="image-button" data-image="${E(src)}" aria-label="${E(label)} 확대"><img class="source-image" src="${src.startsWith('data:')?src:ASSET+src}" alt="${E(label)}: 표와 수식 포함" loading="lazy"></button>`;}
  function tableMarkup(t){return `<div class="table-scroll section-gap"><table class="ex-table"><thead><tr>${t.headers.map(c=>`<th>${E(c)}</th>`).join('')}</tr></thead><tbody>${t.rows.map(row=>`<tr>${row.map(c=>`<td>${E(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
  function disclosure(title,body){return `<details class="disclosure"><summary>${E(title)}</summary><div class="details-body">${body}</div></details>`;}
- function formatSolution(value){return String(value||'').replace(/\r\n?/g,'\n').split('\n').map(line=>{const t=line.trim();if(!t)return '<div class="solution-space" aria-hidden="true"></div>';const m=t.match(/^((?:[①②③④⑤⑥⑦⑧⑨⑩]|[1-9][0-9]*[.)]|[-•▶▪])\s*)(.*)$/);return m?`<div class="solution-line solution-numbered"><span class="solution-marker">${E(m[1].trim())}</span><span class="solution-content">${E(m[2])}</span></div>`:`<div class="solution-line">${E(t)}</div>`;}).join('');}
+ function formatSolution(value){
+  const lines=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').split('\n');
+  return lines.map(line=>{
+   let t=line.trim().replace(/[ \t]{2,}/g,' ');
+   if(!t)return '<div class="solution-space" aria-hidden="true"></div>';
+   t=t.replace(/^([•▪●◦▶►])\s*/,'• ').replace(/^([1-9][0-9]*)[.)]\s*/,'$1. ');
+   const m=t.match(/^((?:[①②③④⑤⑥⑦⑧⑨⑩]|[1-9][0-9]*\.|•))\s*(.*)$/);
+   if(m)return '<div class="solution-line solution-numbered"><span class="solution-marker">'+E(m[1])+'</span><span class="solution-content">'+E(m[2].trim())+'</span></div>';
+   return '<div class="solution-line">'+E(t)+'</div>';
+  }).join('');
+ }
  function question(){const q=course.questions.find(q=>String(q.id)===currentId);if(!q)return `<div class="empty">문항을 찾지 못했습니다.<button data-action="all-questions">문제은행으로</button></div>`;const r=rec(q.id),answers=Array.isArray(q.answer)?q.answer:[q.answer];const canGrade=q.answer!=null;const warning=(q.lawAdapted?`<div class="notice info">${E(q.adaptationNote)} · 원래 출제연도는 ${q.year}년입니다.</div>`:'')+(q.lawReview==='pending'?'<div class="notice">현행법 검토 대기 · 수록 자료의 문제·정답입니다. 2026년 개정법 반영 문제로 확정되지 않았습니다.</div>':q.lawReview==='verified'?'<div class="notice info">2026년 현행법 대조 완료 · 변경 근거는 해설에서 확인하세요.</div>':'');let ex=`<div class="prose solution-prose">${formatSolution(q.explanation||'공식 정답은 확인됐으며 상세 해설은 검토 중입니다.')}</div>`;
  const bookImages=q.textbookExplanationImages||[];
  const bookBody=bookImages.length?`<p class="caption">개인교재 원본 해설 · ${q.year}년 ${q.no}번${q.page?` · 교재 ${q.page}쪽`:''}</p>${q.lawReview||q.subject==='law'?'<p class="notice">교재 발행 당시의 해설입니다. 개정된 규정은 2026년 기준 풀이·해설과 근거 법령을 확인하세요.</p>':''}${q.lawAdapted?'<p class="notice">이 문항은 개정법에 맞춰 수정되었습니다. 교재 원본의 문제·정답과 앱의 문제·정답이 다를 수 있습니다.</p>':''}${bookImages.map(src=>qImage(src,'개인교재 원본 해설')).join('')}`:q.year===2026?'<p class="small muted">2026년 문제는 이 개인교재에 수록되어 있지 않습니다.</p>':course.questions.some(x=>x.textbookExplanationImages?.length)?'<p class="small muted">이 문항은 교재 원본 해설 이미지를 아직 확보하지 못했습니다. 위 풀이·해설을 이용해 주세요.</p>':'<p class="small">개인학습자료 JSON을 한 번 불러오면 교재 원본 해설이 이 기기에 저장되어 다음 실행부터 자동으로 연결됩니다.</p><button data-action="settings">개인학습자료 불러오기</button>';
