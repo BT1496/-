@@ -100,7 +100,8 @@
    const nums=/^([①②③④⑤⑥⑦⑧⑨⑩]|[1-9][0-9]*[.)]|[ㄱㄴㄷㄹㅁㅂ][.)])\s*(.*)$/;
    const personName=/^(?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드)(?=\s|의|:|：|\(|이론|법칙)/;
    const title=/(?:이론|개요|비교|요인|구성|분류|특성|절차|방법|원리|의의|장단점|동기요인과\s*위생요인)\s*(?:\([^)]*\))?$/;
-   const lines=String(source||'').replace(/([^\n])[ \t]+(?=[○◯●•▪▶►]\s)/g,'$1\n').split('\n');
+   const standalone=/^(?:직무충실화|직무확대|직무순환|직무설계|직무분석|직무평가|직무기술서|직무명세서|서열법|분류법|점수법|요소비교법)$/;
+   const lines=String(source||'').replace(/([^\n])[ \t]+(?=[○◯●•▪▶►①②③④⑤⑥⑦⑧⑨⑩]\s)/g,'$1\n').split('\n');
    const pieces=[];let cur=null;
    function flush(){if(cur){pieces.push(cur);cur=null;}}
    for(const raw of lines){
@@ -110,7 +111,7 @@
     if(b||d||n){flush();cur={kind:b?'bullet':d?'detail':'number',label:d?d[1]:n?n[1]:'',parts:[b?b[1]:d?d[2]:n[2]]};}
     else if(t){flush();cur={kind:'term',label:t[1]+t[2],parts:[t[3]]};}
     else if(personName.test(line)){flush();cur={kind:'name',label:'',parts:[line]};}
-    else if(line.length<90&&title.test(line)&&!/[.!?。；;:]$/.test(line)){flush();pieces.push({kind:'heading',label:'',parts:[line]});}
+    else if(standalone.test(line)||line.length<90&&title.test(line)&&!/[.!?。；;:]$/.test(line)){flush();pieces.push({kind:'heading',label:'',parts:[line]});}
     else if(cur&&(cur.kind==='detail'||cur.kind==='bullet'||cur.kind==='number')&&/^(?:결론적으로|따라서|그러므로|정리하면|요약하면|종합하면|한편|반면|다만|즉)[,\s]/.test(line)){flush();cur={kind:'paragraph',label:'',parts:[line]};}
     else if(cur&&/[.!?。]$/.test(cur.parts[cur.parts.length-1]||'')&&!/^\s/.test(raw)){flush();cur={kind:'paragraph',label:'',parts:[line]};}
     else if(cur)cur.parts.push(line);
@@ -125,7 +126,7 @@
      html+='<div class="solution-concept-subhead">'+val+'</div>';
     }else if(p.kind==='name'){
      if(group){html+='</div>';group=false;}
-     html+='<div class="solution-concept-name">'+val+'</div>';
+     html+='<div class="solution-concept-name"><div class="solution-concept-name-content"><strong>'+E(p.parts[0])+'</strong>'+(p.parts.length>1?'<span>'+E(p.parts.slice(1).join(' '))+'</span>':'')+'</div></div>';
     }else if(p.kind==='bullet'){
      if(group){html+='</div>';group=false;}
      if(/^(?:동기\s*요인|위생\s*요인)(?=\s|\(|$)/.test(p.parts.join(' '))){html+='<div class="solution-concept-group">';group=true;}
