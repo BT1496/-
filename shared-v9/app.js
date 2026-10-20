@@ -3,7 +3,7 @@
  const C=StudyCore,$=s=>document.querySelector(s),E=s=>String(s??'').replace(/\ue09e/g,'β').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const ASSET='../shared-v9/',KEY='jidosa-study-v9',NUM=['①','②','③','④','⑤'];
  let historyData=null,historyError='';
- try{historyData=await window.STUDY_HISTORY_READY;}catch(e){historyError='과년도 문제를 불러오지 못했습니다. 최신 Safari·Chrome·Edge에서 새로고침해 주세요.';console.error(e);}
+ try{historyData=await Promise.race([Promise.resolve(window.STUDY_HISTORY_READY),new Promise((_,reject)=>setTimeout(()=>reject(new Error('history loading timeout')),12000))]);}catch(e){historyError='과년도 문제 로딩이 지연되거나 실패했습니다. 기본 학습자료로 계속합니다.';console.error(e);}
  function applyLawUpdates(data){
   if(!historyData)return data;
   const screen=new Map((historyData.reviewScreen||[]).map(x=>[x.id,x]));
