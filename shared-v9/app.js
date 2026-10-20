@@ -98,6 +98,7 @@
    const details=/^[-–—]\s*([^:：]{1,12})\s*[:：]\s*(.*)$/;
    const term=/^([가-힣A-Za-z][가-힣A-Za-z0-9 ()·\/\-]{1,24}?)\s*([:：])\s*(\S.*)$/;
    const nums=/^([①②③④⑤⑥⑦⑧⑨⑩]|[1-9][0-9]*[.)]|[ㄱㄴㄷㄹㅁㅂ][.)])\s*(.*)$/;
+   const personName=/^(?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드)(?=\s|의|:|：|\(|이론|법칙)/;
    const title=/(?:이론|개요|비교|요인|구성|분류|특성|절차|방법|원리|의의|장단점|동기요인과\s*위생요인)\s*(?:\([^)]*\))?$/;
    const lines=String(source||'').replace(/([^\n])[ \t]+(?=[○◯●•▪▶►]\s)/g,'$1\n').split('\n');
    const pieces=[];let cur=null;
@@ -108,6 +109,7 @@
     const b=line.match(bullets),d=line.match(details),n=line.match(nums),t=!b&&!d&&!n?line.match(term):null;
     if(b||d||n){flush();cur={kind:b?'bullet':d?'detail':'number',label:d?d[1]:n?n[1]:'',parts:[b?b[1]:d?d[2]:n[2]]};}
     else if(t){flush();cur={kind:'term',label:t[1]+t[2],parts:[t[3]]};}
+    else if(personName.test(line)){flush();cur={kind:'name',label:'',parts:[line]};}
     else if(line.length<90&&title.test(line)&&!/[.!?。；;:]$/.test(line)){flush();pieces.push({kind:'heading',label:'',parts:[line]});}
     else if(cur)cur.parts.push(line);
     else cur={kind:'paragraph',label:'',parts:[line]};
@@ -119,6 +121,9 @@
     if(p.kind==='heading'){
      if(group){html+='</div>';group=false;}
      html+='<div class="solution-concept-subhead">'+val+'</div>';
+    }else if(p.kind==='name'){
+     if(group){html+='</div>';group=false;}
+     html+='<div class="solution-concept-name">'+val+'</div>';
     }else if(p.kind==='bullet'){
      if(group){html+='</div>';group=false;}
      if(/^(?:동기\s*요인|위생\s*요인)(?=\s|\(|$)/.test(p.parts.join(' '))){html+='<div class="solution-concept-group">';group=true;}
