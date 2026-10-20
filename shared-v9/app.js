@@ -51,6 +51,28 @@
  function tableMarkup(t){return `<div class="table-scroll section-gap"><table class="ex-table"><thead><tr>${t.headers.map(c=>`<th>${E(c)}</th>`).join('')}</tr></thead><tbody>${t.rows.map(row=>`<tr>${row.map(c=>`<td>${E(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
  function disclosure(title,body){return `<details class="disclosure"><summary>${E(title)}</summary><div class="details-body">${body}</div></details>`;}
 
+ function findRelatedConceptLesson(q){
+  const lessons=course.theory?.[q.subject]||[];
+  const stem=String(q.text||'').split(/[①②③④⑤]/)[0];
+  const full=(stem+' '+String(q.topicKey||'')+' '+String(q.topic||'')).replace(/[\s·ㆍ,.;:()\[\]「」]/g,'').toLowerCase();
+  const topic=String(q.topicKey||'').replace(/\s/g,'').toLowerCase();
+  const generic=new Set(['산업','안전','보건','기출문제','기출','산업안전','개념','내용','정의','기준','방법','절차','업무','이론','관한','관계','활용','관리','관련']);
+  let best=null,bestScore=0;
+  for(let i=0;i<lessons.length;i++){
+    const lesson=lessons[i],title=String(lesson.title||'');
+    const terms=(title.match(/[가-힣A-Za-z]{2,}/g)||[]).map(t=>t.replace(/(?:으로|에서|의|과|와|에|을|를|은|는)$/,'')).filter(t=>t.length>=3&&!generic.has(t));
+    let score=0,distinct=0;
+    for(const term of new Set(terms)){const key=term.toLowerCase();if(full.includes(key)){score+=Math.min(10,term.length)+(topic.includes(key)?3:0);distinct++;}}
+    if(distinct===0||score<5||score<=bestScore)continue;
+    best={lesson,index:i};bestScore=score;
+  }
+  if(!best)return null;
+  const body=String(best.lesson.body||'');
+  const pieces=body.split(/\n{2,}/).map(x=>x.replace(/^(?:#{1,6}\s*|\s*[-*]\s*)/gm,'').trim()).filter(x=>x.length>=45&&!/^https?:\/\//.test(x));
+  let excerpt=pieces.find(x=>x.length<=750)||pieces[0]||'';
+  if(excerpt.length>750){const limit=excerpt.slice(0,750),last=Math.max(limit.lastIndexOf('다.'),limit.lastIndexOf('함.'),limit.lastIndexOf('. '));excerpt=last>150?limit.slice(0,last+2):'';}
+  return {title:best.lesson.title,excerpt,index:best.index,subject:q.subject};
+ }
  function formatConceptOnly(value){
   const original=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
   const headings=/(정답\s*해설|오답\s*분석|개념\s*정리|풀이\s*과정)\s*[:：)]?[ \t]*/g;
@@ -277,7 +299,9 @@
  const conceptSources={'2026-1':['산업안전보건법 제17조','https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1029629321'],'2026-34':['ILO 위험성평가 개요','https://www.ilo.org/topics-and-sectors/occupational-safety-and-health-guide-labour-inspectors-and-other/how-can-occupational-safety-and-health-be-managed/controlling-risks'],'2026-54':['ASQ 품질비용 분류','https://asq.org/quality-resources/cost-of-quality'],'2026-59':['INFORMS 채찍효과 연구','https://pubsonline.informs.org/doi/10.1287/mnsc.43.4.546']};
  const conceptReference=conceptSources[String(q.id)]||(q.subject==='law'||(q.year===2026&&[26,27,28,32,33,34,35,40,47,49,50,71,72,73,74,75].includes(Number(q.no)))?['국가법령정보센터: 산업안전보건법','https://www.law.go.kr/LSW/lsInfoP.do?lsId=001766']:q.subject==='corp'||(q.year===2026&&Number(q.no)===31)?['OpenStax: 경영·동기부여 이론','https://openstax.org/books/principles-management/pages/14-introduction']:q.subject==='general'?['OSHA: 유해·위험요인 관리','https://www.osha.gov/safety-management/hazard-prevention']:null);
  const conceptSourceLink=conceptReference?'<p class="small muted">참고자료: <a target="_blank" rel="noopener noreferrer" href="'+E(conceptReference[1])+'">'+E(conceptReference[0])+' ↗</a></p>':'';
- let ex=`<div class="prose solution-prose">${formatConceptOnly(originalExplanation)}${supplementaryConcept?formatConceptOnly('개념정리\n'+supplementaryConcept)+'<p class="small muted">보충 학습자료 · 법령의 세부 수치·대상은 현행 원문으로 확인하세요.</p>'+conceptSourceLink:''}</div>`;
+ const relatedConcept=!supplementaryConcept&&!/개념\s*정리/.test(originalExplanation)?findRelatedConceptLesson(q):null;
+ const relatedConceptHtml=relatedConcept?'<section class="solution-render-section"><div class="solution-section-title">개념정리 · 관련 이론</div><p class="solution-readable-paragraph"><strong>'+E(relatedConcept.title)+'</strong></p>'+(relatedConcept.excerpt?'<p class="solution-readable-paragraph">'+E(relatedConcept.excerpt)+'</p>':'')+'<button class="list-item" data-lesson="'+relatedConcept.index+'" data-lesson-subject="'+E(relatedConcept.subject)+'">관련 이론 원문 학습 →</button></section>':'';
+ let ex=`<div class="prose solution-prose">${formatConceptOnly(originalExplanation)}${supplementaryConcept?formatConceptOnly('개념정리\n'+supplementaryConcept)+'<p class="small muted">보충 학습자료 · 법령의 세부 수치·대상은 현행 원문으로 확인하세요.</p>'+conceptSourceLink:''}${relatedConceptHtml}</div>`;
  const bookImages=q.textbookExplanationImages||[];
  const bookBody=bookImages.length?`<p class="caption">개인교재 원본 해설 · ${q.year}년 ${q.no}번${q.page?` · 교재 ${q.page}쪽`:''}</p>${q.lawReview||q.subject==='law'?'<p class="notice">교재 발행 당시의 해설입니다. 개정된 규정은 2026년 기준 풀이·해설과 근거 법령을 확인하세요.</p>':''}${q.lawAdapted?'<p class="notice">이 문항은 개정법에 맞춰 수정되었습니다. 교재 원본의 문제·정답과 앱의 문제·정답이 다를 수 있습니다.</p>':''}${bookImages.map(src=>qImage(src,'개인교재 원본 해설')).join('')}`:q.year===2026?'<p class="small muted">2026년 문제는 이 개인교재에 수록되어 있지 않습니다.</p>':course.questions.some(x=>x.textbookExplanationImages?.length)?'<p class="small muted">이 문항은 교재 원본 해설 이미지를 아직 확보하지 못했습니다. 위 풀이·해설을 이용해 주세요.</p>':'<p class="small">개인학습자료 JSON을 한 번 불러오면 교재 원본 해설이 이 기기에 저장되어 다음 실행부터 자동으로 연결됩니다.</p><button data-action="settings">개인학습자료 불러오기</button>';
  const display=questionDisplayParts(q),displayOptions=display.options,officialImageFirst=q.year===2026&&q.questionImages?.length&&!Array.isArray(q.options)&&!(q.subject==='law'&&[1,2,5,6].includes(q.no));
