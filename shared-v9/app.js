@@ -131,22 +131,49 @@
   }
   tab();plain();return result;
  }
+ function readableQuestionOcr(value){
+  let text=String(value||'').replace(/\r\n?/g,'\n');
+  // Conservative spacing improvements in the display layer; the original exam content remains unchanged.
+  const rules=[
+   [/산업안전보건기준에관한규칙상/g,'산업안전보건기준에 관한 규칙상 '],
+   [/산업안전보건법령상/g,'산업안전보건법령상 '],
+   [/산업안전보건법상/g,'산업안전보건법상 '],
+   [/에관한/g,'에 관한 '],
+   [/에대한/g,'에 대한 '],
+   [/에따른/g,'에 따른 '],
+   [/에서정하는/g,'에서 정하는 '],
+   [/에해당한다/g,'에 해당한다'],
+   [/옳지않은것은/g,'옳지 않은 것은'],
+   [/옳은것을모두고른것은/g,'옳은 것을 모두 고른 것은'],
+   [/옳은것은/g,'옳은 것은'],
+   [/아닌것은/g,'아닌 것은'],
+   [/모두고른것은/g,'모두 고른 것은'],
+   [/할수있는/g,'할 수 있는 '],
+   [/할수있다/g,'할 수 있다'],
+   [/할수없다/g,'할 수 없다'],
+   [/해야한다/g,'해야 한다'],
+   [/및/g,' 및 '],
+   [/또는/g,' 또는 ']
+  ];
+  for(const [pattern,replacement] of rules)text=text.replace(pattern,replacement);
+  return text.replace(/[ \t]{2,}/g,' ');
+ }
  function questionDisplayParts(q){
   const original=String(q.text||'');
-  if(Array.isArray(q.options)&&q.options.length)return {text:original,options:q.options};
-  const marks=['①','②','③','④','⑤'];
-  // Use the last occurrence, because some legal excerpts contain ①, ② and ③ in the stem.
-  const offsets=marks.map(mark=>original.lastIndexOf(mark));
-  if(!offsets.every((n,i)=>n>=0&&(i===0||n>offsets[i-1])))return {text:original,options:null};
-  const options=marks.map((mark,i)=>original.slice(offsets[i]+mark.length,i===4?original.length:offsets[i+1]).trim().replace(/\r?\n\s*/g,' ').replace(/[ \t]{2,}/g,' '));
+  if(Array.isArray(q.options)&&q.options.length===5&&q.options.every(x=>String(x||'').trim()))return {text:original,options:q.options};
+  const found=[...original.matchAll(/^[ \t]*([①②③④⑤])[ \t]*/gm)];
+  const last=found.slice(-5);
+  // Choose the last complete set: some legal texts contain article numbers ①, ②, ③ in the stem.
+  if(last.length!==5||last.map(m=>m[1]).join('')!=='①②③④⑤')return {text:original,options:null};
+  const options=last.map((mark,i)=>original.slice(mark.index+mark[0].length,i===4?original.length:last[i+1].index).trim());
   if(options.some(option=>!option))return {text:original,options:null};
-  let text=original.slice(0,offsets[0]).trim();
-  // The app metadata already shows the question number; avoid repeating it in the stem.
+  let text=original.slice(0,last[0].index).trim();
+  // The app metadata already shows the question number; avoid a lonely number above the stem.
   if(String(q.id||'').startsWith('2026-'))text=text.replace(new RegExp('^\\s*'+Number(q.no||0)+'\\s*[.)]\\s*'),'').trim();
-  // Official question 6 has been independently checked against the published 2026 paper.
   if(q.year===2026&&q.subject==='law'&&q.no===6&&text.includes('안전보건표지색채'))text='산업안전보건법령상 안전보건표지 색채의 사용례 중 노란색에 대한 보조색은?';
-  return {text,options};
+  return {text:readableQuestionOcr(text),options:options.map(option=>readableQuestionOcr(option).replace(/\n+/g,' ').trim())};
  }
+
  function question(){const q=course.questions.find(q=>String(q.id)===currentId);if(!q)return `<div class="empty">문항을 찾지 못했습니다.<button data-action="all-questions">문제은행으로</button></div>`;const r=rec(q.id),answers=Array.isArray(q.answer)?q.answer:[q.answer];const canGrade=q.answer!=null;const warning=(q.lawAdapted?`<div class="notice info">${E(q.adaptationNote)} · 원래 출제연도는 ${q.year}년입니다.</div>`:'')+(q.lawReview==='pending'?'<div class="notice">현행법 검토 대기 · 수록 자료의 문제·정답입니다. 2026년 개정법 반영 문제로 확정되지 않았습니다.</div>':q.lawReview==='verified'?'<div class="notice info">2026년 현행법 대조 완료 · 변경 근거는 해설에서 확인하세요.</div>':'');let ex=`<div class="prose solution-prose">${formatConceptOnly(q.explanation||'공식 정답은 확인됐으며 상세 해설은 검토 중입니다.')}</div>`;
  const bookImages=q.textbookExplanationImages||[];
  const bookBody=bookImages.length?`<p class="caption">개인교재 원본 해설 · ${q.year}년 ${q.no}번${q.page?` · 교재 ${q.page}쪽`:''}</p>${q.lawReview||q.subject==='law'?'<p class="notice">교재 발행 당시의 해설입니다. 개정된 규정은 2026년 기준 풀이·해설과 근거 법령을 확인하세요.</p>':''}${q.lawAdapted?'<p class="notice">이 문항은 개정법에 맞춰 수정되었습니다. 교재 원본의 문제·정답과 앱의 문제·정답이 다를 수 있습니다.</p>':''}${bookImages.map(src=>qImage(src,'개인교재 원본 해설')).join('')}`:q.year===2026?'<p class="small muted">2026년 문제는 이 개인교재에 수록되어 있지 않습니다.</p>':course.questions.some(x=>x.textbookExplanationImages?.length)?'<p class="small muted">이 문항은 교재 원본 해설 이미지를 아직 확보하지 못했습니다. 위 풀이·해설을 이용해 주세요.</p>':'<p class="small">개인학습자료 JSON을 한 번 불러오면 교재 원본 해설이 이 기기에 저장되어 다음 실행부터 자동으로 연결됩니다.</p><button data-action="settings">개인학습자료 불러오기</button>';
