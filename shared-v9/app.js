@@ -126,7 +126,7 @@
   for(const part of parts){
    const m=part.match(label);
    if(m){plain();rows.push([m[1],m[2]]);}
-   else if(rows.length&&/^\s{2,}\S/.test(part)){rows[rows.length-1][1]+='\n'+part;}
+   else if(rows.length&&part.trim()){rows[rows.length-1][1]+='\n'+part;}
    else {tab();buffer.push(part);}
   }
   tab();plain();return result;
