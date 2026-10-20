@@ -96,6 +96,7 @@
   function conceptBody(source){
    const bullets=/^[○◯●•▪▶►]\s*(.*)$/;
    const details=/^[-–—]\s*([^:：]{1,12})\s*[:：]\s*(.*)$/;
+   const term=/^([가-힣A-Za-z][가-힣A-Za-z0-9 ()·\/\-]{1,24}?)\s*([:：])\s*(\S.*)$/;
    const nums=/^([①②③④⑤⑥⑦⑧⑨⑩]|[1-9][0-9]*[.)]|[ㄱㄴㄷㄹㅁㅂ][.)])\s*(.*)$/;
    const title=/(?:이론|개요|비교|요인|구성|분류|특성|절차|방법|원리|의의|장단점|동기요인과\s*위생요인)\s*(?:\([^)]*\))?$/;
    const lines=String(source||'').replace(/([^\n])[ \t]+(?=[○◯●•▪▶►]\s)/g,'$1\n').split('\n');
@@ -104,8 +105,9 @@
    for(const raw of lines){
     const line=raw.trim();if(!line){flush();continue;}
     if(line===')')continue;
-    const b=line.match(bullets),d=line.match(details),n=line.match(nums);
+    const b=line.match(bullets),d=line.match(details),n=line.match(nums),t=!b&&!d&&!n?line.match(term):null;
     if(b||d||n){flush();cur={kind:b?'bullet':d?'detail':'number',label:d?d[1]:n?n[1]:'',parts:[b?b[1]:d?d[2]:n[2]]};}
+    else if(t){flush();cur={kind:'term',label:t[1]+t[2],parts:[t[3]]};}
     else if(line.length<90&&title.test(line)&&!/[.!?。；;:]$/.test(line)){flush();pieces.push({kind:'heading',label:'',parts:[line]});}
     else if(cur)cur.parts.push(line);
     else cur={kind:'paragraph',label:'',parts:[line]};
@@ -125,6 +127,9 @@
      html+='<div class="solution-concept-detail"><strong>'+E(p.label)+'</strong><span>'+val+'</span></div>';
     }else if(p.kind==='number'){
      html+='<div class="solution-concept-point"><span class="solution-concept-dot">'+E(p.label)+'</span><span>'+val+'</span></div>';
+    }else if(p.kind==='term'){
+     if(group){html+='</div>';group=false;}
+     html+='<div class="solution-concept-term"><span class="solution-concept-term-index"></span><div class="solution-concept-term-content"><strong>'+E(p.label)+'</strong><span>'+val+'</span></div></div>';
     }else{
      if(group){html+='</div>';group=false;}
      html+='<p class="solution-readable-paragraph">'+val+'</p>';
