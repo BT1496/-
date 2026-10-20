@@ -51,7 +51,7 @@
  function tableMarkup(t){return `<div class="table-scroll section-gap"><table class="ex-table"><thead><tr>${t.headers.map(c=>`<th>${E(c)}</th>`).join('')}</tr></thead><tbody>${t.rows.map(row=>`<tr>${row.map(c=>`<td>${E(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
  function disclosure(title,body){return `<details class="disclosure"><summary>${E(title)}</summary><div class="details-body">${body}</div></details>`;}
  function formatSolution(value){
-  const lines=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').split('\n');
+  const lines=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').replace(/\n+/g,' ').replace(/([.!?。！？])\s+(?=[가-힣A-Z①②③④⑤⑥⑦⑧⑨⑩])/g,'$1\n').replace(/\s+(?=[①②③④⑤⑥⑦⑧⑨⑩]\s)/g,'\n').split('\n');
   return lines.map(line=>{
    let t=line.trim().replace(/[ \t]{2,}/g,' ');
    if(!t)return '<div class="solution-space" aria-hidden="true"></div>';
