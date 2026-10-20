@@ -53,22 +53,27 @@
 
  function formatConceptOnly(value){
   const original=String(value||'');
-  const header=/개념\s*정리\s*[:：]?/;
-  const found=header.exec(original);
-  if(!found)return E(original);
-  const headEnd=found.index+found[0].length;
-  const trailing=/(?:\n\s*)(?:정답\s*해설|오답\s*분석|근거\s*법령)\s*[:：]?/g;
-  trailing.lastIndex=headEnd;
-  const next=trailing.exec(original);
-  const end=next?next.index:original.length;
-  const concept=original.slice(headEnd,end);
-  const names=/매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노/g;
-  let count=0;
-  const annotated=concept.replace(/(^|[\n 　])((?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노)(?=\s|의|:|：|\(|이론|법칙))/g,(all,space,name)=>{
-   count++;
-   return space+'\n'+count+'. '+name;
-  });
-  return E(original.slice(0,headEnd))+E(annotated)+E(original.slice(end));
+  const heading=/(개념\s*정리|풀이\s*과정)\s*[:：]?/g;
+  const matches=[...original.matchAll(heading)];
+  if(!matches.length)return E(original);
+  let output='',cursor=0;
+  for(let i=0;i<matches.length;i++){
+   const match=matches[i],start=match.index+match[0].length;
+   const boundaries=/(?:정답\s*해설|오답\s*분석|개념\s*정리|풀이\s*과정|근거\s*법령)\s*[:：]?/g;
+   boundaries.lastIndex=start;
+   const next=boundaries.exec(original);
+   const end=next?next.index:original.length;
+   if(match.index<cursor)continue;
+   output+=E(original.slice(cursor,start));
+   let count=0;
+   const section=original.slice(start,end);
+   const formatted=section.replace(/(^|[\n 　])((?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노)(?=\s|의|:|：|\(|이론|법칙))/g,(all,space,name)=>{
+    count++;
+    return space+'\n'+count+'. '+name;
+   });
+   output+=E(formatted);cursor=end;
+  }
+  return output+E(original.slice(cursor));
  }
  function formatSolution(value){
   const source=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
