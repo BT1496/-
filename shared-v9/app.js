@@ -52,15 +52,34 @@
  function disclosure(title,body){return `<details class="disclosure"><summary>${E(title)}</summary><div class="details-body">${body}</div></details>`;}
 
  function formatSolution(value){
-  const raw=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').replace(/[ \t]{2,}/g,' ').trim();
-  const normalized=raw.replace(/\n+/g,' ').replace(/\s+(?=[①②③④⑤⑥⑦⑧⑨⑩](?:\s|[가-힣]))/g,'\n').replace(/\s+(?=[1-9][.)]\s)/g,'\n').replace(/\s+(?=[•▪●◦▶►]\s)/g,'\n');
-  return normalized.split('\n').map(line=>{
-    let t=line.trim().replace(/\s{2,}/g,' ');
+  const source=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
+  const headings=/(정답\s*해설|오답\s*분석|개념\s*정리)\s*[:：]?/g;
+  const hits=[...source.matchAll(headings)];
+  if(!hits.length)return formatSolutionBody(source,false);
+  let result='',cursor=0,section='';
+  for(const hit of hits){
+    if(hit.index>cursor)result+=formatSolutionBody(source.slice(cursor,hit.index),section==='개념정리');
+    const title=hit[1].replace(/\s+/g,'');
+    result+='<div class="solution-line"><strong>'+E(title)+'</strong></div>';
+    section=title;cursor=hit.index+hit[0].length;
+  }
+  return result+formatSolutionBody(source.slice(cursor),section==='개념정리');
+ }
+ function formatSolutionBody(text,isConcept){
+  let input=String(text||'').trim();
+  if(!input)return '';
+  if(isConcept){
+    input=input.replace(/(?:개인\s*)?교재\s*(\d{2,4})\s*(?:페이지|쪽|p\b)?|(?:[pP]\.?\s*)(\d{2,4})\b|(\d{2,4})\s*(?:페이지|쪽)/g,(_,a,b,c)=>'(교재 '+(a||b||c)+'페이지)');
+  }
+  const lines=isConcept
+   ?input.replace(/\n+/g,' ').replace(/\s+(?=[①②③④⑤⑥⑦⑧⑨⑩](?:\s|[가-힣])|[•▪●◦▶►]\s|[1-9][0-9]*[.)]\s)/g,'\n').split('\n')
+   :input.replace(/\n+/g,' ').replace(/\s+(?=[①②③④⑤⑥⑦⑧⑨⑩](?:\s|[가-힣])|[•▪●◦▶►]\s|[1-9][0-9]*[.)]\s)/g,'\n').split('\n');
+  return lines.map(line=>{
+    let t=line.trim().replace(/[ \t]{2,}/g,' ');
     if(!t)return '';
     t=t.replace(/^([•▪●◦▶►])\s*/,'• ').replace(/^([1-9][0-9]*)[.)]\s*/,'$1. ');
     const m=t.match(/^((?:[①②③④⑤⑥⑦⑧⑨⑩]|[1-9][0-9]*\.|•))\s*(.*)$/);
-    if(m)return '<div class="solution-line solution-numbered"><span class="solution-marker">'+E(m[1])+'</span><span class="solution-content">'+E(m[2].trim())+'</span></div>';
-    return '<div class="solution-line">'+E(t)+'</div>';
+    return m?'<div class="solution-line solution-numbered"><span class="solution-marker">'+E(m[1])+'</span><span class="solution-content">'+E(m[2].trim())+'</span></div>':'<div class="solution-line">'+E(t)+'</div>';
   }).join('');
  }
  function question(){const q=course.questions.find(q=>String(q.id)===currentId);if(!q)return `<div class="empty">문항을 찾지 못했습니다.<button data-action="all-questions">문제은행으로</button></div>`;const r=rec(q.id),answers=Array.isArray(q.answer)?q.answer:[q.answer];const canGrade=q.answer!=null;const warning=(q.lawAdapted?`<div class="notice info">${E(q.adaptationNote)} · 원래 출제연도는 ${q.year}년입니다.</div>`:'')+(q.lawReview==='pending'?'<div class="notice">현행법 검토 대기 · 수록 자료의 문제·정답입니다. 2026년 개정법 반영 문제로 확정되지 않았습니다.</div>':q.lawReview==='verified'?'<div class="notice info">2026년 현행법 대조 완료 · 변경 근거는 해설에서 확인하세요.</div>':'');let ex=`<div class="prose solution-prose">${formatSolution(q.explanation||'공식 정답은 확인됐으며 상세 해설은 검토 중입니다.')}</div>`;
