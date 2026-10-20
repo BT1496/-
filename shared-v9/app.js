@@ -52,28 +52,28 @@
  function disclosure(title,body){return `<details class="disclosure"><summary>${E(title)}</summary><div class="details-body">${body}</div></details>`;}
 
  function formatConceptOnly(value){
-  const original=String(value||'');
-  const heading=/(개념\s*정리|풀이\s*과정)\s*[:：]?/g;
+  const original=String(value||'').replace(/\r\n?/g,'\n');
+  const heading=/(정답\s*해설|오답\s*분석|개념\s*정리|풀이\s*과정)\s*[:：]?/g;
   const matches=[...original.matchAll(heading)];
-  if(!matches.length)return E(original);
-  let output='',cursor=0;
-  for(let i=0;i<matches.length;i++){
-   const match=matches[i],start=match.index+match[0].length;
-   const boundaries=/(?:정답\s*해설|오답\s*분석|개념\s*정리|풀이\s*과정|근거\s*법령)\s*[:：]?/g;
-   boundaries.lastIndex=start;
-   const next=boundaries.exec(original);
-   const end=next?next.index:original.length;
-   if(match.index<cursor)continue;
-   output+=E(original.slice(cursor,start));
-   let count=0;
-   const section=original.slice(start,end);
-   const formatted=section.replace(/(^|[\n 　])((?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노)(?=\s|의|:|：|\(|이론|법칙))/g,(all,space,name)=>{
-    count++;
-    return space+'\n'+count+'. '+name;
-   });
-   output+=E(formatted);cursor=end;
+  const person=/^\s*(?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노)(?=\s|의|:|：|\(|이론|법칙)/;
+  function rows(text,numberNames){
+    return '<div class="solution-section-body">'+text.split('\n').map(line=>{
+      const pieces=line.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/g);
+      return pieces.map((part,i)=>{
+        const named=numberNames&&i===0&&person.test(part);
+        return '<div class="solution-text-row'+(named?' solution-name-row':'')+(part?'':' solution-empty-row')+'">'+E(part)+'</div>';
+      }).join('');
+    }).join('')+'</div>';
   }
-  return output+E(original.slice(cursor));
+  if(!matches.length)return rows(original,false);
+  let output=rows(original.slice(0,matches[0].index),false);
+  for(let i=0;i<matches.length;i++){
+    const match=matches[i],start=match.index+match[0].length;
+    const end=i+1<matches.length?matches[i+1].index:original.length;
+    const nameSection=/개념\s*정리|풀이\s*과정/.test(match[1]);
+    output+='<section class="solution-render-section"><div class="solution-section-title">'+E(match[0])+'</div>'+rows(original.slice(start,end),nameSection)+'</section>';
+  }
+  return output;
  }
  function formatSolution(value){
   const source=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
