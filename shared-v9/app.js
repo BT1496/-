@@ -77,12 +77,15 @@
       else current={kind:'paragraph',marker:'',parts:[line]};
     }
     flush();
+    if(!blocks.length)return '';
     return '<div class="solution-section-body">'+blocks.map(block=>{
       let joined='';
       for(const part of block.parts){
         if(!part)continue;
         if(!joined)joined=part;
         else if(/^[),.;:!?]/.test(part)||/[(]$/.test(joined))joined+=part;
+        else if(/[가-힣]$/.test(joined)&&/^(?:에|의|은|는|이|가|을|를|와|과|로|도|만|부터|까지|에서|에게|께)(?=\s|[,.!?;:]|$)/.test(part))joined+=part;
+        else if(/[가-힣]$/.test(joined)&&/^(?:인다|는다|었다|았다|겠다|한다|했다|이다)(?=\W|$)/.test(part))joined+=part;
         else joined+=' '+part;
       }
       if(block.kind==='number')return '<div class="solution-readable-item"><span class="solution-readable-marker">'+E(block.marker)+'</span><div class="solution-readable-text">'+E(joined)+'</div></div>';
