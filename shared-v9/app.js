@@ -71,6 +71,14 @@
   if(isConcept){
     input=input.replace(/(?:개인\s*)?교재\s*(\d{2,4})\s*(?:페이지|쪽|p\b)?|(?:[pP]\.?\s*)(\d{2,4})\b|(\d{2,4})\s*(?:페이지|쪽)/g,(_,a,b,c)=>'(교재 '+(a||b||c)+'페이지)');
   }
+  // Remove only a closing parenthesis that appears alone, not parentheses within text.
+  input=input.replace(/(^|\\n)\\s*\\)\\s*(?=\\n|$)/g,'$1');
+  if(isConcept){
+    // A standalone three-digit reference in this section denotes a textbook page.
+    input=input.replace(/(^|\\n)\\s*(\\d{3})\\s*(?=\\n|$)/g,(_,prefix,page)=>prefix+'(교재 '+page+'페이지)');
+    input=input.replace(/\\b625\\b(?!\\s*(?:페이지|쪽|[a-zA-Z%]|\\d))/g,'(교재 625페이지)');
+    input=input.replace(/\\(교재\\s*\\(교재\\s*(\\d+)페이지\\)페이지\\)/g,'(교재 $1페이지)');
+  }
   const lines=isConcept
    ?input.replace(/\n+/g,' ').replace(/\s+(?=[①②③④⑤⑥⑦⑧⑨⑩](?:\s|[가-힣])|[•▪●◦▶►]\s|[1-9][0-9]*[.)]\s)/g,'\n').split('\n')
    :input.replace(/\n+/g,' ').replace(/\s+(?=[①②③④⑤⑥⑦⑧⑨⑩](?:\s|[가-힣])|[•▪●◦▶►]\s|[1-9][0-9]*[.)]\s)/g,'\n').split('\n');
