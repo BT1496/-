@@ -278,11 +278,11 @@
   },
   "2026-69": {
     "text": "직업병 통계는 해당 연도·분류에 따라 진폐, 소음성 난청, 근골격계질환, 직업성 암 등의 건수를 집계한다.\n'직업병자 수'와 '업무상 질병자 수'는 통계 범주가 다를 수 있다. 2024년 기준 수치는 고용노동부 산업재해현황분석 원표와 비교한다.",
-    "url": "https://www.law.go.kr/법령/산업안전보건법"
+    "url": ""
   },
   "2026-70": {
     "text": "산업위생 역사: 라마찌니는 직업과 질병의 관계를 체계적으로 기술한 인물이다.\n퍼시벌 포트는 굴뚝청소부의 노출과 음낭암의 관련성을 보고했다.\n국내의 2-브로모프로판 생식독성 사례 등은 유해인자 확인과 노출관리의 중요성을 보여준다.",
-    "url": "https://www.law.go.kr/법령/산업안전보건법"
+    "url": ""
   },
   "2026-71": {
     "text": "노출기준 단위: 가스·증기는 ppm, 입자상 물질은 mg/m³, 섬유상 분진은 개/cm³ 등이 쓰일 수 있다.\n고온 환경에는 WBGT를 사용할 수 있다.\nTWA·STEL·C 및 발암성 분류는 서로 다른 정보를 뜻한다. 수치의 유효시점과 측정방법을 함께 확인한다.",
@@ -305,12 +305,31 @@
     "url": "https://www.law.go.kr/법령/산업안전보건법"
   }
 };
+  const historicTopics=[
+    [/허즈버그|Herzberg/i,'허즈버그의 2요인이론\n동기요인: 성취·인정·책임·성장 등 직무 내용에 관련된 요인으로 직무만족을 높인다.\n위생요인: 급여·작업환경·회사정책·대인관계 등의 직무 환경 요인으로, 부족하면 불만족을 유발할 수 있지만 충족만으로 만족을 보장하지는 않는다.','https://openstax.org/books/introduction-business-2e/pages/9-5-herzbergs-motivator-hygiene-theory'],
+    [/CPM|주경로기법|임계경로법/i,'주경로법(CPM): 작업 선후관계의 네트워크에서 총 소요시간이 가장 긴 경로를 찾아 공기를 관리한다.\n주경로에 속한 작업의 지연은 프로젝트 완료 시점을 지연시킬 수 있다.\nPERT: 낙관·최빈·비관 등 복수의 기간 추정치를 사용해 일정의 불확실성을 분석할 수 있다.','https://www.pmi.org/learning/library/pert-cpm-network-precedence-diagram-3736'],
+    [/PERT|계획평가기법/i,'PERT와 CPM 비교\nPERT는 불확실한 작업 기간을 낙관·최빈·비관 추정으로 분석하고, CPM은 주요 경로와 일정·비용의 관계를 관리한다.\n완료시간 계산에서 선행작업과 여유시간을 구분한다.','https://www.pmi.org/learning/library/pert-cpm-network-precedence-diagram-3736'],
+    [/FMEA|고장형태.*영향/i,'FMEA(고장형태 및 영향 분석): 구성요소·공정의 잠재적 고장형태를 식별하고 원인·영향·관리대책을 분석하는 상향식 분석이다.\nFTA와 달리 개별 고장형태가 시스템에 어떤 영향을 미치는지 출발점으로 삼는다.','https://s3vi.ndc.nasa.gov/ssri-kb/topics/16/'],
+    [/FTA|결함수분석|고장수분석/i,'FTA(결함수 분석): 시스템의 바람직하지 않은 최상위 사고를 설정하고, AND·OR 논리로 하위 원인 조합을 추적한다.\n최상위 사건에서 원인으로 내려가는 하향식 연역 분석이며, FMEA의 상향식 접근과 구분한다.','https://s3vi.ndc.nasa.gov/ssri-kb/topics/16/'],
+    [/하인리히|Heinrich/i,'하인리히 사고연쇄: 사고는 단일 원인보다 선행 요인의 연쇄 작용으로 설명한다.\n예방은 사고 직전의 불안전한 행동·상태뿐 아니라 작업환경과 관리체계 등 상위 원인까지 개선해야 한다.','https://www.cdc.gov/niosh/hierarchy-of-controls/about/index.html'],
+    [/재해발생빈도|사고빈도율|도수율/i,'재해도수율: 일정한 근로시간당 산업재해 발생 빈도를 나타내는 지표다.\n도수율과 강도율은 각각 빈도와 손실 규모에 초점을 두므로 단위·분모·환산계수를 먼저 비교한다.',''],
+    [/직무특성|Hackman|Oldham|해크만/i,'직무특성모형: 기술다양성·과업정체성·과업중요성·자율성·피드백을 핵심 직무특성으로 본다.\n자율성과 피드백은 책임감과 성과지식 같은 심리적 상태에 연결되어 내재적 동기를 설명한다.','https://openstax.org/books/organizational-behavior/pages/7-2-content-theories-of-motivation'],
+    [/품질비용|예방비용|평가비용|실패비용/i,'품질비용의 네 가지 범주\n예방비용: 결함의 발생을 막기 위한 교육·품질계획·사전 설계검토 등.\n평가비용: 품질을 판정하는 검사·시험 등.\n내부실패비용: 인도 전 발견된 불량·재작업.\n외부실패비용: 인도 후 발생한 반품·보증·클레임.','https://asq.org/quality-resources/cost-of-quality'],
+    [/경제적주문량|EOQ/i,'경제적 주문량(EOQ): 수요가 일정한 기본 조건에서 주문비용과 재고유지비용의 합을 최소화하는 주문량을 구한다.\n기본 모형에서는 구매단가가 주문량에 따라 달라지지 않는다고 가정하며, 수량할인 조건은 별도로 검토한다.',''],
+    [/채찍효과|bullwhip/i,'채찍효과는 최종 소비자 수요의 작은 변동이 공급망 상류에서 주문량·재고량의 더 큰 변동으로 증폭되는 현상이다.\n정확한 수요정보 공유, 리드타임 단축, 합리적인 발주단위 설정이 완화 수단이다.',''],
+    [/유니버설디자인|Universal.Design/i,'유니버설디자인: 성별·연령·장애 유무와 관계없이 폭넓은 사용자가 쉽게 이용할 수 있도록 설계하는 접근이다.\n이해하기 쉬운 조작, 명확한 피드백, 오류에 대한 관용, 신체 부담 감소 등이 중요하다.','https://www.cdc.gov/niosh/ergonomics/ergo-programs/implement.html']
+  ];
+  function historicMatch(q){
+    const stem=String(q&&q.text||'').split(/[①②③④⑤]/)[0]+' '+String(q&&q.topicKey||'');
+    for(const row of historicTopics){if(row[0].test(stem))return {text:row[1],url:row[2],historic:true};}
+    return null;
+  }
   window.STUDY_CONCEPT_SUPPLEMENTS=Object.freeze({
     notes:Object.freeze(notes),
     get:function(q){
       const id=String(q&&q.id||'');
       if(/개념\s*정리/.test(String(q&&q.explanation||'')))return null;
-      return notes[id]||null;
+      return notes[id]||historicMatch(q);
     }
   });
 })();
