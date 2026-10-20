@@ -153,3 +153,8 @@ body.mobile-layout .layout{max-width:820px;display:block}body.mobile-layout .sid
 .solution-concept-detail{grid-template-columns:minmax(0,5.8em) minmax(0,1fr)}
 .solution-concept-detail>strong{white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
 @media(max-width:430px){.solution-concept-detail{grid-template-columns:minmax(0,5.2em) minmax(0,1fr)}}
+
+/* Name headings: label and explanation on separate lines */
+.solution-concept-name-content{min-width:0;display:flex;flex-direction:column;gap:4px}
+.solution-concept-name-content>strong{display:block;font-weight:800;word-break:keep-all}
+.solution-concept-name-content>span{display:block;font-weight:450;line-height:1.76;word-break:keep-all;overflow-wrap:anywhere}
