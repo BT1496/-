@@ -53,7 +53,7 @@
 
  function formatConceptOnly(value){
   const original=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
-  const headings=/(정답\s*해설|오답\s*분석|개념\s*정리|풀이\s*과정)\s*[:：]?/g;
+  const headings=/(정답\s*해설|오답\s*분석|개념\s*정리|풀이\s*과정)\s*[:：)]?[ \t]*/g;
   const hits=[...original.matchAll(headings)];
   const person=/^(?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노)(?=\s|의|:|：|\(|이론|법칙)/;
   const numbered=/^([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]|[1-9][0-9]*[.)]|[ㄱㄴㄷㄹㅁㅂ][.)]|[•▪●▶►])\s*(.*)$/;
@@ -93,12 +93,52 @@
       return '<p class="solution-readable-paragraph">'+E(joined)+'</p>';
     }).join('')+'</div>';
   }
+  function conceptBody(source){
+   const bullets=/^[○◯●•▪▶►]\s*(.*)$/;
+   const details=/^[-–—]\s*([^:：]{1,12})\s*[:：]\s*(.*)$/;
+   const nums=/^([①②③④⑤⑥⑦⑧⑨⑩]|[1-9][0-9]*[.)]|[ㄱㄴㄷㄹㅁㅂ][.)])\s*(.*)$/;
+   const title=/(?:이론|개요|비교|요인|구성|분류|특성|절차|방법|원리|의의|장단점|동기요인과\s*위생요인)\s*(?:\([^)]*\))?$/;
+   const lines=String(source||'').replace(/([^\n])[ \t]+(?=[○◯●•▪▶►]\s)/g,'$1\n').split('\n');
+   const pieces=[];let cur=null;
+   function flush(){if(cur){pieces.push(cur);cur=null;}}
+   for(const raw of lines){
+    const line=raw.trim();if(!line){flush();continue;}
+    if(line===')')continue;
+    const b=line.match(bullets),d=line.match(details),n=line.match(nums);
+    if(b||d||n){flush();cur={kind:b?'bullet':d?'detail':'number',label:d?d[1]:n?n[1]:'',parts:[b?b[1]:d?d[2]:n[2]]};}
+    else if(line.length<90&&title.test(line)&&!/[.!?。；;:]$/.test(line)){flush();pieces.push({kind:'heading',label:'',parts:[line]});}
+    else if(cur)cur.parts.push(line);
+    else cur={kind:'paragraph',label:'',parts:[line]};
+   }
+   flush();
+   let html='',group=false;
+   for(const p of pieces){
+    const val=E(p.parts.join(' ').replace(/\s+([,.;:!?])/g,'$1'));
+    if(p.kind==='heading'){
+     if(group){html+='</div>';group=false;}
+     html+='<div class="solution-concept-subhead">'+val+'</div>';
+    }else if(p.kind==='bullet'){
+     if(group){html+='</div>';group=false;}
+     if(/^(?:동기\s*요인|위생\s*요인)(?=\s|\(|$)/.test(p.parts.join(' '))){html+='<div class="solution-concept-group">';group=true;}
+     html+='<div class="solution-concept-point"><span class="solution-concept-dot">•</span><span>'+val+'</span></div>';
+    }else if(p.kind==='detail'){
+     html+='<div class="solution-concept-detail"><strong>'+E(p.label)+'</strong><span>'+val+'</span></div>';
+    }else if(p.kind==='number'){
+     html+='<div class="solution-concept-point"><span class="solution-concept-dot">'+E(p.label)+'</span><span>'+val+'</span></div>';
+    }else{
+     if(group){html+='</div>';group=false;}
+     html+='<p class="solution-readable-paragraph">'+val+'</p>';
+    }
+   }
+   if(group)html+='</div>';
+   return '<div class="solution-concept-body">'+html+'</div>';
+  }
   if(!hits.length)return body(original,false);
   let out=body(original.slice(0,hits[0].index),false);
   for(let i=0;i<hits.length;i++){
     const hit=hits[i],start=hit.index+hit[0].length,end=i+1<hits.length?hits[i+1].index:original.length;
     const isNamed=/개념\s*정리|풀이\s*과정/.test(hit[1]);
-    out+='<section class="solution-render-section"><div class="solution-section-title">'+E(hit[1].replace(/\s+/g,''))+'</div>'+body(original.slice(start,end),isNamed)+'</section>';
+    out+='<section class="solution-render-section"><div class="solution-section-title">'+E(hit[1].replace(/\s+/g,''))+'</div>'+(/개념\s*정리/.test(hit[1])?conceptBody(original.slice(start,end)):body(original.slice(start,end),isNamed))+'</section>';
   }
   return out;
  }
