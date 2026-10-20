@@ -319,6 +319,43 @@
     [/채찍효과|bullwhip/i,'채찍효과는 최종 소비자 수요의 작은 변동이 공급망 상류에서 주문량·재고량의 더 큰 변동으로 증폭되는 현상이다.\n정확한 수요정보 공유, 리드타임 단축, 합리적인 발주단위 설정이 완화 수단이다.',''],
     [/유니버설디자인|Universal.Design/i,'유니버설디자인: 성별·연령·장애 유무와 관계없이 폭넓은 사용자가 쉽게 이용할 수 있도록 설계하는 접근이다.\n이해하기 쉬운 조작, 명확한 피드백, 오류에 대한 관용, 신체 부담 감소 등이 중요하다.','https://www.cdc.gov/niosh/ergonomics/ergo-programs/implement.html']
   ];
+  /* Additional verified historic concept themes: explanations are original paraphrases. */
+  historicTopics.push(
+    [/산업안전보건위원회|노사동수/i,"산업안전보건위원회\n• 사업장의 안전·보건 중요사항을 노사 대표가 함께 심의·의결하는 법정 기구다.\n• 도급인·수급인의 협의체와 목적·구성·회의 운영을 혼동하지 않는다.","https://www.law.go.kr/LSW/LsiJoLinkP.do?docType=JO&joNo=013200000&languageType=KO&lsNm=%EC%82%B0%EC%97%85%EC%95%88%EC%A0%84%EB%B3%B4%EA%B1%B4%EB%B2%95&paras=1"],
+    [/안전보건관리책임자|관리감독자|안전관리자|보건관리자|산업보건의/i,"안전보건관리체제\n• 안전보건관리책임자는 산업재해 예방업무를 총괄한다.\n• 관리감독자는 소속 근로자를 직접 지휘·감독한다.\n• 안전·보건관리자는 해당 분야의 기술적 사항을 보좌하고 지도·조언하며, 산업보건의는 의학적 전문성을 제공한다.","https://www.law.go.kr/LSW/LsiJoLinkP.do?docType=JO&joNo=013200000&languageType=KO&lsNm=%EC%82%B0%EC%97%85%EC%95%88%EC%A0%84%EB%B3%B4%EA%B1%B4%EB%B2%95&paras=1"],
+    [/위험성평가|유해위험요인/i,"위험성평가\n• 작업과정의 유해·위험요인을 찾아 위험성을 판단하고 감소대책을 수립·실행하는 예방활동이다.\n• 위험을 발생원에서 제거·대체하거나 공학적으로 제어하는 방법을 우선 검토하고, 근로자 참여 및 결과 공유를 포함한다.","https://www.safety.or.kr/safety/main/contents.do?menuNo=200029"],
+    [/도급인|관계수급인|하도급|수급인/i,"도급사업의 산업재해 예방\n• 도급인과 관계수급인은 각각 법령상 의무가 있으며, 공통 작업의 위험을 조정·공유해야 한다.\n• 도급금지, 도급승인, 협의체 운영, 작업장 순회점검 등은 각기 다른 법적 근거에 따른다.","https://www.law.go.kr/LSW/LsiJoLinkP.do?docType=JO&joNo=013200000&languageType=KO&lsNm=%EC%82%B0%EC%97%85%EC%95%88%EC%A0%84%EB%B3%B4%EA%B1%B4%EB%B2%95&paras=1"],
+    [/안전보건관리규정/i,"안전보건관리규정\n• 사업장에서 안전·보건업무를 체계적으로 수행하기 위해 조직·직무·교육·사고예방 등의 기준을 정한 규정이다.\n• 작성 대상 업종·규모, 포함사항, 변경·게시 등에 관한 규정은 법령에서 따로 확인한다.","https://www.law.go.kr/LSW/LsiJoLinkP.do?docType=JO&joNo=013200000&languageType=KO&lsNm=%EC%82%B0%EC%97%85%EC%95%88%EC%A0%84%EB%B3%B4%EA%B1%B4%EB%B2%95&paras=1"],
+    [/정기교육|특별교육|안전보건교육|직무교육/i,"안전보건교육의 구분\n• 정기교육, 채용 시 교육, 작업내용 변경 시 교육, 특별교육은 실시 목적과 대상이 다르다.\n• 관리감독자 등 직무교육 대상과 교육시간은 근로자 교육과 별도로 확인하며, 개정 별표에 따라 달라질 수 있다.","https://www.law.go.kr/LSW/lsInfoP.do?lsId=007364"],
+    [/산업재해조사표|재해조사|사고조사/i,"산업재해조사와 기록\n• 재해의 발생경위, 직접원인과 관리적 원인을 확인하고 재발방지대책을 수립한다.\n• 보고의무와 조사표의 작성·제출 요건은 산업안전보건법령에 따르며 산재보험 급여신청과 구별한다.","https://www.law.go.kr/LSW/lsInfoP.do?lsId=007364"],
+    [/중대재해|중대산업재해/i,"중대재해의 법적 구분\n• 산업안전보건법령의 중대재해와 중대재해처벌법의 중대산업재해는 법령과 적용범위가 다르다.\n• 사망·부상·직업성 질병 요건을 관련 정의 조문에서 개별 확인해야 한다.","https://www.law.go.kr/LSW/LsiJoLinkP.do?docType=JO&joNo=013200000&languageType=KO&lsNm=%EC%82%B0%EC%97%85%EC%95%88%EC%A0%84%EB%B3%B4%EA%B1%B4%EB%B2%95&paras=1"],
+    [/안전인증|자율안전확인|안전검사|방호조치/i,"기계·기구 안전확보 제도\n• 방호조치는 위험점에 대한 보호수단, 안전인증·자율안전확인은 제품의 안전기준 적합성 확인, 안전검사는 사용 중 설비의 상태 확인에 중점을 둔다.\n• 의무대상과 면제·예외 조건은 제도마다 다르다.","https://www.law.go.kr/LSW/lsInfoP.do?lsId=007364"],
+    [/작업환경측정|특수건강진단|배치전건강진단/i,"유해인자 노출과 건강관리\n• 작업환경측정은 작업장의 유해인자 노출 수준을 파악하는 활동이다.\n• 배치전·특수·수시 건강진단 등은 근로자 건강영향을 확인하기 위한 제도로, 측정주기와 검진주기를 혼동하지 않는다.","https://www.law.go.kr/LSW/lsInfoP.do?lsId=007364"],
+    [/MSDS|물질안전보건자료|화학물질/i,"화학물질 위험성 정보\n• 물질안전보건자료(MSDS)는 화학물질의 유해성·위험성, 취급·저장 방법, 보호조치와 응급조치를 전달한다.\n• 관리대상·특별관리·허용기준 물질과 특수검진·작업환경측정 대상 여부는 각각 규정에서 확인한다.","https://www.law.go.kr/LSW/lsInfoP.do?lsId=007364"],
+    [/유해위험방지계획서|공정안전보고서/i,"유해·위험 방지계획과 공정안전\n• 유해위험방지계획서는 특정 사업·공사의 유해위험을 사전에 검토해 예방대책을 수립하는 자료다.\n• 공정안전보고서(PSM)는 중대산업사고 예방을 위해 공정위험성평가·안전운전절차 등 체계를 관리한다.","https://www.law.go.kr/LSW/lsInfoP.do?lsId=007364"],
+    [/추락|개구부|비계|굴착|흙막이/i,"건설현장의 위험원 제거\n• 추락·붕괴 위험은 작업 전 구조·개구부·지반·가시설 상태를 파악하고 위험원의 제거·격리·보강을 우선 검토한다.\n• 근로자 교육·표지·보호구는 시설과 공학적 대책을 보완하는 조치다.","https://www.cdc.gov/niosh/hierarchy-of-controls/about/"],
+    [/휴먼에러|인적오류|인간오류|THERP/i,"인적오류의 분석\n• 인적오류는 작업절차·표시장치·부하·환경 등 여러 요인의 영향을 받는다.\n• THERP는 작업단계별 오류 사건과 확률을 분석하는 방법으로, 시스템의 방어계층 개선과 함께 활용한다.","https://www.cdc.gov/niosh/hierarchy-of-controls/about/"],
+    [/FTA|결함수분석|고장수분석/i,"FTA(결함수 분석)\n• 최상위의 바람직하지 않은 사건에서 시작해 AND·OR 논리를 통해 가능한 하위 원인을 찾아가는 하향식 분석이다.\n• FMEA는 개별 고장형태와 영향에서 출발하므로 분석 방향이 다르다.","https://csrc.nist.gov/glossary/term/fault_tree_analysis"],
+    [/FMEA|고장형태.*영향/i,"FMEA(고장형태 및 영향 분석)\n• 제품·공정의 잠재적 고장형태를 식별하고 발생원인, 영향과 현행 관리수단을 검토한다.\n• 결과의 심각도·발생 가능성·검출 가능성을 고려해 우선 개선대상을 정한다.","https://asq.org/quality-resources/fmea"],
+    [/신뢰도|고장률|가용도|보전도|MTBF|MTTR/i,"신뢰성과 보전성\n• 신뢰도는 일정 기간 동안 요구 기능을 고장 없이 수행할 확률이다.\n• 보전도는 고장 후 일정 시간 이내에 복구할 확률이며, 가용도는 특정 시점에 사용 가능한 상태일 확률이다.\n• 직렬·병렬 구성에서는 계통별 확률 계산방식이 달라진다.","https://csrc.nist.gov/glossary/term/fault_tree_analysis"],
+    [/부울대수|논리회로|진리표|XOR/i,"논리연산과 진리표\n• AND는 모든 조건이 참이어야 참이고, OR는 적어도 하나가 참이면 참이다.\n• XOR는 두 입력이 서로 다를 때 참이므로, OR와 출력이 다른 입력 조합을 구분한다.","https://csrc.nist.gov/glossary/term/fault_tree_analysis"],
+    [/안전교육|학습원리|시범교육|실습교육/i,"안전교육 방법\n• 강의·토의·시범·실습은 지식전달 방식과 학습자 참여 정도가 다르다.\n• 실습은 습득한 지식·기술을 직접 적용하고 피드백을 받는 학습방식으로, 단순 설명이나 관찰과 구별한다.","https://www.osha.gov/safety-management/hazard-prevention"],
+    [/인간공학|유니버설디자인|근골격계질환/i,"인간공학과 근골격계질환\n• 인간공학은 작업·도구·환경을 사람의 능력과 한계에 맞도록 설계하는 접근이다.\n• 큰 힘, 반복동작, 불편한 자세, 진동 등 위험요인을 파악해 작업설계 및 설비개선으로 줄인다.","https://www.cdc.gov/niosh/ergonomics/ergo-programs/risk-factors.html"],
+    [/도수율|강도율|근로손실일수|재해통계/i,"재해통계 지표\n• 도수율은 일정 근로시간당 재해발생 빈도를, 강도율은 근로손실일수를 기준으로 재해의 심각성을 나타낸다.\n• 산정식의 기준시간과 분모·단위를 확인하며 근로손실일수의 인정 기준을 구분한다.","https://www.law.go.kr/LSW/lsInfoP.do?lsId=007364"],
+    [/매슬로|Maslow|욕구단계/i,"매슬로의 욕구단계\n• 생리적 욕구, 안전욕구, 소속·애정욕구, 존중욕구, 자아실현욕구로 설명한다.\n• 존중욕구는 타인의 인정·명예·지위 등과 관련되며 생존 및 신체안전 욕구와 구별한다.","https://openstax.org/books/organizational-behavior/pages/7-2-content-theories-of-motivation"],
+    [/브룸|Vroom|기대이론/i,"브룸의 기대이론\n• 노력하면 성과가 날 것이라는 기대, 성과가 보상으로 이어지는 수단성, 보상의 주관적 유의성이 동기부여를 좌우한다.\n• 성과 이후의 차이만으로 동기를 설명하는 이론이 아니다.","https://openstax.org/books/organizational-behavior/pages/7-3-process-theories-of-motivation"],
+    [/아담스|Adams|공정성이론/i,"아담스의 공정성이론\n• 개인은 자신이 투입한 노력·능력과 얻은 보상의 비율을 타인과 비교해 공정성을 판단한다.\n• 불공정하다고 느끼면 노력량 조정 등으로 균형을 회복하려 할 수 있다.","https://openstax.org/books/organizational-behavior/pages/7-3-process-theories-of-motivation"],
+    [/피들러|Fiedler|상황적합이론|경로목표이론/i,"리더십의 상황적 접근\n• 피들러의 상황적합이론은 지도자 특성과 상황의 적합성을 중시한다.\n• 경로-목표이론은 부하가 목표를 달성할 수 있도록 장애를 제거하고 지원하는 지도자 행동에 초점을 둔다.","https://openstax.org/books/principles-management/pages/13-7-situational-contingency-approaches-to-leadership"],
+    [/직무설계|직무평가|직무분석|직무충실화/i,"직무분석과 직무설계\n• 직무분석은 과업과 수행요건을 조사해 직무기술서·직무명세서 작성에 활용한다.\n• 직무확대는 유사 수준의 업무범위를 늘리고, 직무충실화는 자율성·책임·성취기회를 높여 직무의 질을 바꾸는 접근이다.","https://openstax.org/books/organizational-behavior/pages/7-4-recent-research-on-motivation-theories"],
+    [/품질비용|예방비용|평가비용|품질관리/i,"품질비용의 분류\n• 예방비용은 불량 발생을 막는 교육·설계·품질계획, 평가비용은 검사·시험에 쓰인다.\n• 내부실패비용은 인도 전 불량·재작업, 외부실패비용은 인도 후 반품·보증과 관련된다.","https://asq.org/quality-resources/cost-of-quality"],
+    [/경제적주문량|EOQ|재고관리|채찍효과/i,"재고 및 공급사슬 관리\n• 경제적 주문량(EOQ)은 발주비용과 재고유지비용의 합을 최소화하는 주문량을 구하는 기본모형이다.\n• 채찍효과는 고객 수요의 작은 변동이 공급망 상류에서 주문·재고 변동을 더 크게 만드는 현상이다.","https://asq.org/quality-resources/cost-of-quality"],
+    [/인사평가|평정오류|후광효과|초두효과|관대화/i,"인사평가 방법과 오류\n• 성과지표 중심 평가와 행동에 근거한 평가척도(BARS)를 구별한다.\n• 초두효과는 초기 정보, 최근효과는 마지막 정보에 평가가 지나치게 좌우되는 오류다.","https://openstax.org/books/principles-management/pages/7-4-performance-appraisal"],
+    [/직무스트레스|KOSS|조직스트레스/i,"직무스트레스\n• 업무 요구, 직무자율성, 관계갈등, 조직체계, 보상 등 여러 차원에서 발생하는 부담을 평가한다.\n• 신체적 유해요인과 심리사회적 부담요인을 분리해서 파악한다.","https://www.cdc.gov/niosh/ergonomics/ergo-programs/risk-factors.html"],
+    [/주의|여과기|선택적주의|인간정보처리/i,"주의와 정보처리\n• 사람은 모든 자극을 동일하게 처리하지 못해 주의가 선택적으로 배분된다.\n• 경보·표시장치 설계에서는 신호의 탐지 가능성, 혼동, 인지부하를 고려해야 한다.","https://www.cdc.gov/niosh/topics/ergonomics/default.html"],
+    [/집단효능감|집단사고|사회적태만|사회적촉진/i,"집단행동\n• 집단효능감은 공동목표를 달성할 수 있다는 구성원들의 공유된 믿음이다.\n• 집단사고는 비판적 검토가 약해지는 현상, 사회적 태만은 집단에서 개인의 노력이 줄어드는 현상이다.","https://openstax.org/books/principles-management/pages/13-5-creating-and-managing-teams"],
+    [/국소배기장치|제어풍속|후드|배기덕트/i,"국소배기와 포집\n• 국소배기장치는 유해인자의 발생원에서 오염물질을 포집해 확산을 줄이는 설비다.\n• 포위식 후드와 외부식 후드는 포집 원리와 제어풍속의 측정 위치를 구분해야 한다.","https://www.cdc.gov/niosh/ergonomics/ergo-programs/risk-factors.html"],
+    [/TWA|STEL|노출기준|직업성난청|소음성난청/i,"유해인자 노출평가\n• 시간가중평균(TWA)은 노출시간에 따른 평균농도이며, STEL은 정해진 단시간의 노출수준을 평가한다.\n• 소음·분진·화학물질은 유해인자에 맞는 단위·측정방법과 기준을 확인해야 한다.","https://www.law.go.kr/LSW/lsInfoP.do?lsId=007364"]
+  );
   function historicMatch(q){
     const stem=String(q&&q.text||'').split(/[①②③④⑤]/)[0]+' '+String(q&&q.topicKey||'');
     for(const row of historicTopics){if(row[0].test(stem))return {text:row[1],url:row[2],historic:true};}
