@@ -61,3 +61,32 @@ body.mobile-layout .layout{max-width:820px;display:block}body.mobile-layout .sid
  .question-card .options .option{padding:14px 12px;gap:11px}
  .question-card .options .option.selected{padding:13px 11px}
 }
+
+/* Unified Android Chrome / iOS Safari question layout */
+.question-layout,.question-card,.question-card .question-text,.question-card .options,.question-card .option-body{min-width:0;max-width:100%;box-sizing:border-box}
+.question-card .question-text{
+  white-space:normal;
+  word-break:keep-all;
+  overflow-wrap:break-word;
+  line-break:auto;
+  -webkit-hyphens:none;
+  hyphens:none;
+  letter-spacing:normal;
+  font-synthesis:none;
+  font-size:1.0625rem;
+  font-weight:600;
+  line-height:1.8;
+  text-wrap:wrap;
+}
+.question-card .options .option{display:flex;align-items:flex-start;min-width:0;max-width:100%;box-sizing:border-box}
+.question-card .options .option-body{display:block;flex:1 1 0;min-width:0;white-space:pre-line;word-break:keep-all;overflow-wrap:break-word;line-break:auto;-webkit-hyphens:none;hyphens:none}
+.question-card .options .option-num{flex:0 0 30px;white-space:nowrap}
+@supports (-webkit-touch-callout:none){
+ .question-card .question-text,.question-card .options .option-body{overflow-wrap:break-word;-webkit-text-size-adjust:100%}
+}
+@media(max-width:430px){
+ .question-card{padding:17px 14px}
+ .question-card .question-text{font-size:1.025rem;line-height:1.78}
+ .question-card .options .option{padding:13px 11px}
+ .question-card .options .option.selected{padding:12px 10px}
+}
