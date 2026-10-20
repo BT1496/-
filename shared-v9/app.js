@@ -51,6 +51,25 @@
  function tableMarkup(t){return `<div class="table-scroll section-gap"><table class="ex-table"><thead><tr>${t.headers.map(c=>`<th>${E(c)}</th>`).join('')}</tr></thead><tbody>${t.rows.map(row=>`<tr>${row.map(c=>`<td>${E(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
  function disclosure(title,body){return `<details class="disclosure"><summary>${E(title)}</summary><div class="details-body">${body}</div></details>`;}
 
+ function formatConceptOnly(value){
+  const original=String(value||'');
+  const header=/개념\s*정리\s*[:：]?/;
+  const found=header.exec(original);
+  if(!found)return E(original);
+  const headEnd=found.index+found[0].length;
+  const trailing=/(?:\n\s*)(?:정답\s*해설|오답\s*분석|근거\s*법령)\s*[:：]?/g;
+  trailing.lastIndex=headEnd;
+  const next=trailing.exec(original);
+  const end=next?next.index:original.length;
+  const concept=original.slice(headEnd,end);
+  const names=/매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노/g;
+  let count=0;
+  const annotated=concept.replace(/(^|[\n 　])((?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노)(?=\s|의|:|：|\(|이론|법칙))/g,(all,space,name)=>{
+   count++;
+   return space+'\n'+count+'. '+name;
+  });
+  return E(original.slice(0,headEnd))+E(annotated)+E(original.slice(end));
+ }
  function formatSolution(value){
   const source=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
   const headings=/(정답\s*해설|오답\s*분석|개념\s*정리)\s*[:：]?/g;
@@ -90,7 +109,7 @@
     return m?'<div class="solution-line solution-numbered"><span class="solution-marker">'+E(m[1])+'</span><span class="solution-content">'+E(m[2].trim())+'</span></div>':'<div class="solution-line">'+E(t)+'</div>';
   }).join('');
  }
- function question(){const q=course.questions.find(q=>String(q.id)===currentId);if(!q)return `<div class="empty">문항을 찾지 못했습니다.<button data-action="all-questions">문제은행으로</button></div>`;const r=rec(q.id),answers=Array.isArray(q.answer)?q.answer:[q.answer];const canGrade=q.answer!=null;const warning=(q.lawAdapted?`<div class="notice info">${E(q.adaptationNote)} · 원래 출제연도는 ${q.year}년입니다.</div>`:'')+(q.lawReview==='pending'?'<div class="notice">현행법 검토 대기 · 수록 자료의 문제·정답입니다. 2026년 개정법 반영 문제로 확정되지 않았습니다.</div>':q.lawReview==='verified'?'<div class="notice info">2026년 현행법 대조 완료 · 변경 근거는 해설에서 확인하세요.</div>':'');let ex=`<div class="prose solution-prose">${E(q.explanation||'공식 정답은 확인됐으며 상세 해설은 검토 중입니다.')}</div>`;
+ function question(){const q=course.questions.find(q=>String(q.id)===currentId);if(!q)return `<div class="empty">문항을 찾지 못했습니다.<button data-action="all-questions">문제은행으로</button></div>`;const r=rec(q.id),answers=Array.isArray(q.answer)?q.answer:[q.answer];const canGrade=q.answer!=null;const warning=(q.lawAdapted?`<div class="notice info">${E(q.adaptationNote)} · 원래 출제연도는 ${q.year}년입니다.</div>`:'')+(q.lawReview==='pending'?'<div class="notice">현행법 검토 대기 · 수록 자료의 문제·정답입니다. 2026년 개정법 반영 문제로 확정되지 않았습니다.</div>':q.lawReview==='verified'?'<div class="notice info">2026년 현행법 대조 완료 · 변경 근거는 해설에서 확인하세요.</div>':'');let ex=`<div class="prose solution-prose">${formatConceptOnly(q.explanation||'공식 정답은 확인됐으며 상세 해설은 검토 중입니다.')}</div>`;
  const bookImages=q.textbookExplanationImages||[];
  const bookBody=bookImages.length?`<p class="caption">개인교재 원본 해설 · ${q.year}년 ${q.no}번${q.page?` · 교재 ${q.page}쪽`:''}</p>${q.lawReview||q.subject==='law'?'<p class="notice">교재 발행 당시의 해설입니다. 개정된 규정은 2026년 기준 풀이·해설과 근거 법령을 확인하세요.</p>':''}${q.lawAdapted?'<p class="notice">이 문항은 개정법에 맞춰 수정되었습니다. 교재 원본의 문제·정답과 앱의 문제·정답이 다를 수 있습니다.</p>':''}${bookImages.map(src=>qImage(src,'개인교재 원본 해설')).join('')}`:q.year===2026?'<p class="small muted">2026년 문제는 이 개인교재에 수록되어 있지 않습니다.</p>':course.questions.some(x=>x.textbookExplanationImages?.length)?'<p class="small muted">이 문항은 교재 원본 해설 이미지를 아직 확보하지 못했습니다. 위 풀이·해설을 이용해 주세요.</p>':'<p class="small">개인학습자료 JSON을 한 번 불러오면 교재 원본 해설이 이 기기에 저장되어 다음 실행부터 자동으로 연결됩니다.</p><button data-action="settings">개인학습자료 불러오기</button>';
  const explanationPanels=disclosure(q.lawReview==='verified'?'2026년 기준 풀이·해설 보기':'풀이·해설 보기',ex)+disclosure('개인교재 원본 해설 보기',bookBody);
