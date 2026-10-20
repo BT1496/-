@@ -53,10 +53,7 @@
 
  function formatConceptSection(value){
   let text=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').replace(/[ \t]{2,}/g,' ').trim();
-  text=text.replace(/(?:개인\s*)?교재\s*(?:p\.?\s*)?(\d{2,4})\s*(?:쪽|페이지|p\b)?/gi,'(개인교재 $1페이지)');
-  text=text.replace(/\b(?:p\.?\s*)(\d{2,4})\b/gi,'(개인교재 $1페이지)');
-  text=text.replace(/(\d{2,4})\s*(?:페이지|쪽)\b/g,'(개인교재 $1페이지)');
-  text=text.replace(/\b(\d{2,4})\s*p\b/gi,'(개인교재 $1페이지)');
+  text=text.replace(/(?:개인\s*)?교재\s*(?:p\.?\s*)?(\d{2,4})\s*(?:쪽|페이지|p\b)?|\b[pP]\.?\s*(\d{2,4})\b|\b(\d{2,4})\s*(?:페이지|쪽|[pP]\b)/g,(_,a,b,c)=>'(개인교재 '+(a||b||c)+'페이지)');
   text=text.replace(/\n+/g,' ').replace(/\s{2,}/g,' ');
   text=text.replace(/\s*(?=(?:[①②③④⑤⑥⑦⑧⑨⑩]\s|[•▪●▶]\s|(?:[1-9][0-9]*[.)])\s))/g,'\n');
   text=text.replace(/([.!?。！？])\s+(?=[가-힣“"「])/g,'$1\n');
