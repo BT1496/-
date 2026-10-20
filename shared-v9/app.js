@@ -52,28 +52,52 @@
  function disclosure(title,body){return `<details class="disclosure"><summary>${E(title)}</summary><div class="details-body">${body}</div></details>`;}
 
  function formatConceptOnly(value){
-  const original=String(value||'').replace(/\r\n?/g,'\n');
-  const heading=/(정답\s*해설|오답\s*분석|개념\s*정리|풀이\s*과정)\s*[:：]?/g;
-  const matches=[...original.matchAll(heading)];
-  const person=/^\s*(?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노)(?=\s|의|:|：|\(|이론|법칙)/;
-  function rows(text,numberNames){
-    return '<div class="solution-section-body">'+text.split('\n').map(line=>{
-      const pieces=line.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/g);
-      return pieces.map((part,i)=>{
-        const named=numberNames&&i===0&&person.test(part);
-        return '<div class="solution-text-row'+(named?' solution-name-row':'')+(part?'':' solution-empty-row')+'">'+E(part)+'</div>';
-      }).join('');
+  const original=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
+  const headings=/(정답\s*해설|오답\s*분석|개념\s*정리|풀이\s*과정)\s*[:：]?/g;
+  const hits=[...original.matchAll(headings)];
+  const person=/^(?:매슬로|허즈버그|맥그리거|맥클리랜드|알더퍼|브룸|아담스|로크|스키너|파블로프|반두라|피들러|허시|블랜차드|호손|테일러|페이욜|베버|해크먼|올덤|리커트|레윈|라자루스|카라섹|하인리히|버드|도미노)(?=\s|의|:|：|\(|이론|법칙)/;
+  const numbered=/^([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]|[1-9][0-9]*[.)]|[ㄱㄴㄷㄹㅁㅂ][.)]|[•▪●▶►])\s*(.*)$/;
+  function body(text,numberNames){
+    let blocks=[],current=null;
+    function flush(){if(current){blocks.push(current);current=null;}}
+    const lines=text.replace(/[ \t]+(?=[①②③④⑤⑥⑦⑧⑨⑩])/g,'\n').split('\n');
+    for(const raw of lines){
+      const line=raw.trim();
+      if(!line){flush();continue;}
+      if(line===')'){
+        const soFar=current?current.parts.join(' '):'';
+        const opens=(soFar.match(/\(/g)||[]).length;
+        const closes=(soFar.match(/\)/g)||[]).length;
+        if(opens<=closes)continue; // Hide an unmatched, orphan closing bracket only.
+      }
+      const marked=line.match(numbered);
+      const isPerson=numberNames&&person.test(line);
+      if(marked||isPerson){flush();current={kind:marked?'number': 'name',marker:marked?marked[1]:'',parts:[marked?marked[2]:line]};}
+      else if(current){current.parts.push(line);}
+      else current={kind:'paragraph',marker:'',parts:[line]};
+    }
+    flush();
+    return '<div class="solution-section-body">'+blocks.map(block=>{
+      let joined='';
+      for(const part of block.parts){
+        if(!part)continue;
+        if(!joined)joined=part;
+        else if(/^[),.;:!?]/.test(part)||/[(]$/.test(joined))joined+=part;
+        else joined+=' '+part;
+      }
+      if(block.kind==='number')return '<div class="solution-readable-item"><span class="solution-readable-marker">'+E(block.marker)+'</span><div class="solution-readable-text">'+E(joined)+'</div></div>';
+      if(block.kind==='name')return '<p class="solution-readable-paragraph solution-name-row">'+E(joined)+'</p>';
+      return '<p class="solution-readable-paragraph">'+E(joined)+'</p>';
     }).join('')+'</div>';
   }
-  if(!matches.length)return rows(original,false);
-  let output=rows(original.slice(0,matches[0].index),false);
-  for(let i=0;i<matches.length;i++){
-    const match=matches[i],start=match.index+match[0].length;
-    const end=i+1<matches.length?matches[i+1].index:original.length;
-    const nameSection=/개념\s*정리|풀이\s*과정/.test(match[1]);
-    output+='<section class="solution-render-section"><div class="solution-section-title">'+E(match[0])+'</div>'+rows(original.slice(start,end),nameSection)+'</section>';
+  if(!hits.length)return body(original,false);
+  let out=body(original.slice(0,hits[0].index),false);
+  for(let i=0;i<hits.length;i++){
+    const hit=hits[i],start=hit.index+hit[0].length,end=i+1<hits.length?hits[i+1].index:original.length;
+    const isNamed=/개념\s*정리|풀이\s*과정/.test(hit[1]);
+    out+='<section class="solution-render-section"><div class="solution-section-title">'+E(hit[1].replace(/\s+/g,''))+'</div>'+body(original.slice(start,end),isNamed)+'</section>';
   }
-  return output;
+  return out;
  }
  function formatSolution(value){
   const source=String(value||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
