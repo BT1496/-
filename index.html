@@ -19,6 +19,7 @@ textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px
 table{width:100%;border-collapse:collapse;font-size:14px}td{border:1px solid var(--line);padding:8px}
 nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);z-index:10}nav button{border:0;background:#fff;padding:11px 2px;font-size:11px;color:#667085}nav button.active{color:var(--b);font-weight:800}
 .ok{color:var(--ok)}.bad{color:var(--bad)}
+.solution-block{margin-top:12px;padding:14px;border:1px solid #e5eaf0;border-radius:12px;background:#f8fafc}.solution-title{font-weight:800;margin-bottom:8px;color:#0f4c81}.solution-text{white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all;line-height:1.85;font-size:14px;margin:0}.solution-choice{padding:8px 0;border-bottom:1px solid #e5eaf0;display:grid;grid-template-columns:24px minmax(0,1fr);gap:6px;align-items:start}.solution-choice:last-child{border-bottom:0}.solution-choice span:last-child{white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all;line-height:1.7}.solution-card{margin-top:12px}.solution-card>strong{display:block;line-height:1.6}
 </style>
 </head>
 <body>
@@ -127,7 +128,7 @@ function grade(){
   localStorage.setItem("studyState",JSON.stringify(state));
   result.classList.remove("hidden");
   const more = quizMode==="daily" ? `<div class="row" style="margin-top:12px"><button class="btn" onclick="startExtra(5)">추가 5문제</button><button class="btn sub" onclick="startExtra(10)">추가 10문제</button><button class="btn sub" onclick="startWrongRetry()">오답 다시풀기</button></div>` : "";
-  result.innerHTML=`<h2>${c}/${graded.length} 채점 · 미검증 ${pending}문항</h2>`+currentQuiz.map((q,i)=>`<div class="card"><b>${i+1}. ${escapeHtml(q.topic)} · ${!Number.isInteger(q.a)?'정답 검증 대기':ans[q.id]===q.a?'정답':'오답'}</b><p class="small">${Number.isInteger(q.a)?'정답 '+['①','②','③','④','⑤'][q.a]:'공식 정답 대조 전'} · ${escapeHtml(q.ex||'')}</p>${(q.choiceExplanations||[]).length?`<p class="small">${q.choiceExplanations.map((s,j)=>`${['①','②','③','④','⑤'][j]} ${escapeHtml(s)}`).join('<br>')}</p>`:''}</div>`).join('')+more;
+  result.innerHTML=`<h2>${c}/${graded.length} 채점 · 미검증 ${pending}문항</h2>`+currentQuiz.map((q,i)=>`<div class="card solution-card"><strong>${i+1}. ${escapeHtml(q.topic)} · ${!Number.isInteger(q.a)?'정답 검증 대기':ans[q.id]===q.a?'정답':'오답'}</strong><div class="solution-block"><div class="solution-title">${Number.isInteger(q.a)?'정답 '+['①','②','③','④','⑤'][q.a]:'공식 정답 대조 전'} · 풀이과정 및 해설</div><p class="solution-text">${escapeHtml(q.ex||'해설 준비 중')}</p></div>${(q.choiceExplanations||[]).length?`<div class="solution-block"><div class="solution-title">선택지별 해설</div>${q.choiceExplanations.map((v,j)=>`<div class="solution-choice"><span>${['①','②','③','④','⑤'][j]}</span><span>${escapeHtml(v)}</span></div>`).join('')}</div>`:''}</div>`).join('')+more;
   refresh();
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
@@ -258,7 +259,7 @@ async function viewAnnex(i){
 function markTheoryDone(k,i){
  const done=JSON.parse(localStorage.getItem("theoryDone")||"{}");const key=k+":"+i;done[key]=!done[key];localStorage.setItem("theoryDone",JSON.stringify(done));renderTheory(k)
 }
-function renderWrong(){wrongBox.innerHTML=state.wrong.length?state.wrong.map(q=>`<div class="card"><b>${q.subject} · ${q.topic}</b><p>${q.q}</p><p class="small">${q.ex}</p><span class="badge">${q.count||1}회 오답</span></div>`).join(""):`<p class="small">아직 오답이 없습니다.</p>`}
+function renderWrong(){wrongBox.innerHTML=state.wrong.length?state.wrong.map(q=>`<div class="card"><b>${q.subject} · ${q.topic}</b><p>${q.q}</p><div class="solution-block"><div class="solution-title">풀이과정 및 해설</div><p class="solution-text">${escapeHtml(q.ex||"")}</p></div><span class="badge">${q.count||1}회 오답</span></div>`).join(""):`<p class="small">아직 오답이 없습니다.</p>`}
 function renderAnalysis(){
   const m={};state.wrong.forEach(q=>m[q.topic]=(m[q.topic]||0)+(q.count||1));
   analysisBox.innerHTML=Object.keys(m).length?Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="card"><b>${k}</b><p class="small">${v}회 오답 · 우선복습 추천</p></div>`).join(""):`<p class="small">문제를 먼저 풀어주세요.</p>`;
