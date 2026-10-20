@@ -63,7 +63,8 @@
     const terms=(title.match(/[가-힣A-Za-z]{2,}/g)||[]).map(t=>t.replace(/(?:으로|에서|의|과|와|에|을|를|은|는)$/,'')).filter(t=>t.length>=3&&!generic.has(t));
     let score=0,distinct=0;
     for(const term of new Set(terms)){const key=term.toLowerCase();if(full.includes(key)){score+=Math.min(10,term.length)+(topic.includes(key)?3:0);distinct++;}}
-    if(distinct===0||score<5||score<=bestScore)continue;
+    const strongTopic=terms.some(term=>term.length>=4&&topic.includes(term.toLowerCase())&&topic!=='기출문제'&&!topic.includes('년기출'));
+    if((distinct<2&&!strongTopic)||score<5||score<=bestScore)continue;
     best={lesson,index:i};bestScore=score;
   }
   if(!best)return null;
