@@ -270,9 +270,12 @@
  }
 
  function question(){const q=course.questions.find(q=>String(q.id)===currentId);if(!q)return `<div class="empty">문항을 찾지 못했습니다.<button data-action="all-questions">문제은행으로</button></div>`;const r=rec(q.id),answers=Array.isArray(q.answer)?q.answer:[q.answer];const canGrade=q.answer!=null;const warning=(q.lawAdapted?`<div class="notice info">${E(q.adaptationNote)} · 원래 출제연도는 ${q.year}년입니다.</div>`:'')+(q.lawReview==='pending'?'<div class="notice">현행법 검토 대기 · 수록 자료의 문제·정답입니다. 2026년 개정법 반영 문제로 확정되지 않았습니다.</div>':q.lawReview==='verified'?'<div class="notice info">2026년 현행법 대조 완료 · 변경 근거는 해설에서 확인하세요.</div>':'');const originalExplanation=q.explanation||'공식 정답은 확인됐으며 상세 해설은 검토 중입니다.';
- const supplementaryConcept=!/개념\\s*정리/.test(originalExplanation)?(window.STUDY_CONCEPT_EXTRA?.[String(q.id)]||window.STUDY_CONCEPT_2026?.[String(q.id)]):null;
+ const conceptStem=String(q.text||'').split(/[①②③④⑤]/)[0]+' '+String(q.topicKey||'');
+ const conceptMatch=(window.STUDY_CONCEPT_MATCHES||[]).find(pair=>{try{return new RegExp(pair[0],'i').test(conceptStem)}catch(err){return false}});
+ const conceptNoteId=conceptMatch?conceptMatch[1]:'';
+ const supplementaryConcept=!/개념\s*정리/.test(originalExplanation)?(window.STUDY_CONCEPT_EXTRA?.[String(q.id)]||window.STUDY_CONCEPT_EXTRA?.[conceptNoteId]||window.STUDY_CONCEPT_2026?.[String(q.id)]):null;
  const conceptSources={'2026-1':['산업안전보건법 제17조','https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1029629321'],'2026-34':['ILO 위험성평가 개요','https://www.ilo.org/topics-and-sectors/occupational-safety-and-health-guide-labour-inspectors-and-other/how-can-occupational-safety-and-health-be-managed/controlling-risks'],'2026-54':['ASQ 품질비용 분류','https://asq.org/quality-resources/cost-of-quality'],'2026-59':['IBM 채찍효과','https://www.ibm.com/thought-leadership/institute-business-value/en-us/blog/covid-19-electronics']};
- const conceptReference=conceptSources[String(q.id)]||(q.subject==='law'?['국가법령정보센터','https://www.law.go.kr/']:null);
+ const conceptReference=conceptSources[String(q.id)]||(q.subject==='law'||[26,27,28,32,33,34,35,40,47,49,50,71,72,73,74,75].includes(Number(q.no))?['국가법령정보센터: 산업안전보건법','https://www.law.go.kr/LSW/lsInfoP.do?lsId=001766']:q.subject==='corp'||Number(q.no)===31?['OpenStax: 경영·동기부여 이론','https://openstax.org/books/principles-management/pages/14-introduction']:q.subject==='general'?['OSHA: 유해·위험요인 관리','https://www.osha.gov/safety-management/hazard-prevention']:null);
  const conceptSourceLink=conceptReference?'<p class="small muted">참고자료: <a target="_blank" rel="noopener noreferrer" href="'+E(conceptReference[1])+'">'+E(conceptReference[0])+' ↗</a></p>':'';
  let ex=`<div class="prose solution-prose">${formatConceptOnly(originalExplanation)}${supplementaryConcept?formatConceptOnly('개념정리\n'+supplementaryConcept)+'<p class="small muted">보충 학습자료 · 법령의 세부 수치·대상은 현행 원문으로 확인하세요.</p>'+conceptSourceLink:''}</div>`;
  const bookImages=q.textbookExplanationImages||[];
