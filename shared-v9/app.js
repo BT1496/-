@@ -111,6 +111,8 @@
     else if(t){flush();cur={kind:'term',label:t[1]+t[2],parts:[t[3]]};}
     else if(personName.test(line)){flush();cur={kind:'name',label:'',parts:[line]};}
     else if(line.length<90&&title.test(line)&&!/[.!?。；;:]$/.test(line)){flush();pieces.push({kind:'heading',label:'',parts:[line]});}
+    else if(cur&&(cur.kind==='detail'||cur.kind==='bullet'||cur.kind==='number')&&/^(?:결론적으로|따라서|그러므로|정리하면|요약하면|종합하면|한편|반면|다만|즉)[,\s]/.test(line)){flush();cur={kind:'paragraph',label:'',parts:[line]};}
+    else if(cur&&/[.!?。]$/.test(cur.parts[cur.parts.length-1]||'')&&!/^\s/.test(raw)){flush();cur={kind:'paragraph',label:'',parts:[line]};}
     else if(cur)cur.parts.push(line);
     else cur={kind:'paragraph',label:'',parts:[line]};
    }
