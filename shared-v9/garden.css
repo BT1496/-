@@ -99,3 +99,35 @@ body.mobile-layout.garden-enabled .mobile-nav button.active{color:#207653}
 @media(prefers-reduced-motion:reduce){.garden-explorer,.garden-reward,.garden-confetti{animation:none!important}.garden-meter i{transition:none!important}.garden-start:active{translate:none}}
 
 .garden-heading p,.garden-section-title>span,.garden-mission p,.garden-mission small,.garden-fine,.garden-bottom-note,.garden-subjects small,.garden-materials p,.garden-hud small,.garden-closet summary>span+span{color:#65745f}.garden-boss>span:nth-child(2)>span{color:#756486}
+
+/* Real WebGL game view, with CSS 3D fallback. */
+.garden-3d-frame{height:330px;border-radius:21px;overflow:hidden;position:relative;background:linear-gradient(#d1eadd,#eaf2cb);isolation:isolate}
+.garden-3d-mount{position:absolute;inset:0;z-index:0}
+.garden-3d-canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:pan-y}
+.garden-3d-canvas:active{cursor:grabbing}
+.garden-3d-canvas:focus-visible{outline:3px solid #bd8c32;outline-offset:-5px}
+.garden-3d-caption{position:absolute;top:13px;left:14px;background:#ffffffe0;backdrop-filter:blur(7px);border:1px solid #ffffffc0;border-radius:13px;padding:9px 12px;pointer-events:none;box-shadow:0 3px 10px #285b3020}
+.garden-3d-caption>span{display:block;color:#63765f;font-size:.59rem;margin-bottom:3px}
+.garden-3d-caption strong{font-size:1.22rem;line-height:1;color:#356147;font-variant-numeric:tabular-nums}
+.garden-3d-caption small{font-size:.61rem}
+.garden-3d-hint{position:absolute;right:11px;bottom:10px;background:#ffffffe0;border-radius:8px;padding:5px 7px;color:#53694e;font-size:.57rem;pointer-events:none}
+.garden-3d-jump{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);white-space:nowrap;background:#ffe59b;color:#67501b;font-size:.75rem;font-weight:800;border:1px solid #f1c35f;border-radius:12px;padding:9px 13px;opacity:0;transition:opacity .15s;pointer-events:none;box-shadow:0 4px 12px #8e79352b}
+.garden-3d-frame:has(.garden-3d-mount[data-jumping="true"]) .garden-3d-jump{opacity:1}
+.garden-3d-loading{text-align:center;padding:65px 15px;color:#54795f;font-size:.8rem}
+.garden-gameplay{position:sticky;top:6px;z-index:12;margin-bottom:15px;background:#f5f7ef;border:1px solid #dce6d5;border-radius:20px;box-shadow:0 5px 18px #314e2c16;overflow:hidden}
+.garden-3d-compact{height:175px;border-radius:18px 18px 0 0}
+.garden-3d-compact .garden-3d-caption{top:9px;left:10px;padding:6px 9px}
+.garden-3d-compact .garden-3d-caption strong{font-size:1.1rem}
+.garden-gameplay .garden-hud{margin:0;border:0;border-top:1px solid #dbe5d2;border-radius:0;padding:9px 12px;gap:11px}
+.garden-floor{display:flex;align-items:baseline;justify-content:center;gap:3px;min-width:39px;color:#39704f;font-size:1.25rem;font-weight:850}
+.garden-floor small{font-size:.6rem;color:#72826c}
+.garden-gameplay .garden-hud small{font-size:.62rem;margin-bottom:5px}
+.garden-gameplay .garden-hud strong{font-size:.76rem}
+.garden-gameplay .garden-meter{height:5px}
+.garden-css-scene{position:absolute;inset:0;perspective:650px;overflow:hidden;background:linear-gradient(#d6edeb,#c9e2b5)}
+.garden-css-world{position:absolute;left:50%;top:55%;width:200px;height:230px;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(23deg) rotateY(-30deg)}
+.garden-css-step{position:absolute;left:calc(70px + var(--step)*9px);bottom:calc(var(--step)*30px);width:88px;height:48px;background:#80b070;border-bottom:10px solid #8b7853;border-radius:9px;transform:translateZ(calc(var(--step)*6px)) rotateX(62deg);box-shadow:9px 12px 0 #628b55}
+.garden-css-player{position:absolute;left:calc(98px + var(--rise)*9px);bottom:calc(30px + var(--rise)*30px);display:flex;flex-direction:column;align-items:center;transform:translateZ(38px);transition:bottom .8s ease,left .8s ease;font-size:2.2rem;line-height:.8}
+.garden-css-player b{font-size:1.7rem}.garden-3d-mode{position:absolute;bottom:10px;left:10px;color:#5c7652;font-size:.6rem}
+@media(max-height:730px){.garden-3d-compact{height:132px}.garden-gameplay .garden-hud{padding:7px 10px}.garden-3d-compact .garden-3d-caption>span{font-size:.55rem}.garden-3d-compact .garden-3d-hint{font-size:.52rem}}
+@media(prefers-reduced-motion:reduce){.garden-css-player,.garden-3d-jump{transition:none}}
