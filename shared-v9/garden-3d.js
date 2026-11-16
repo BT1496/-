@@ -1,6 +1,6 @@
 (function garden3D(root){
 'use strict';
-const STEP=.8,TAU=Math.PI*2,clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const STEP=1.6,TAU=Math.PI*2,clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 function identity(){return [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];}
 function multiply(a,b){const m=new Array(16).fill(0);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)m[c*4+r]+=a[k*4+r]*b[c*4+k];return m;}
 function perspective(fov,aspect,near,far){const f=1/Math.tan(fov/2),nf=1/(near-far);return [f/aspect,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0];}
