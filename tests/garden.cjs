@@ -4,7 +4,7 @@ async function integrationTest(layout,withGarden=true){
  const data={'jidosa-study-v9':JSON.stringify({records:{'2026-1':{attempts:2,correct:false,note:'기존 메모',starred:true}},lessonDone:{},videoDone:{}})},storage={getItem:k=>data[k]||null,setItem:(k,v)=>data[k]=v};
  let html='',click;const errors=[],classes=new Set(),frames=[],element={classList:{add(){},remove(){},toggle(){}},textContent:'',value:'',focus(){},setSelectionRange(){},showModal(){},close(){}},main={get innerHTML(){return html;},set innerHTML(v){html=v;}};
  const document={body:{dataset:{layout},classList:{add:x=>classes.add(x)}},querySelector:s=>s==='#main'?main:element,querySelectorAll:()=>[],addEventListener:(type,fn)=>{if(type==='click')click=fn;}};
- const window={addEventListener(){},scrollTo(){},STUDY_HISTORY_READY:Promise.resolve(null),STUDY_COURSE:{title:'기존 과정',questions:Array.from({length:90},(_,i)=>({id:'2026-'+(i+1),year:2026,no:i+1,subject:['law','general','corp'][Math.floor(i/30)],text:'실제 과정과 같은 5지선다 형식의 테스트 문항',options:['선택지1','선택지2','선택지3','선택지4','선택지5'],answer:1,explanation:'정답해설\n근거 설명을 그대로 유지합니다.\n오답분석\n각 선지의 이유를 설명합니다.'})),theory:{law:[{title:'안전보건교육',body:'관련 법과 시행령, 시행규칙 본문',trap:'주체와 교육시간 구별'}],general:[],corp:[]},videos:[]}};
+ const window={addEventListener(){},scrollTo(){},STUDY_HISTORY_READY:Promise.resolve(null),STUDY_COURSE:{title:'기존 과정',questions:Array.from({length:90},(_,i)=>({id:'2026-'+(i+1),year:2026,no:i+1,subject:['law','general','corp'][Math.floor(i/30)],text:'실제\u3000\u00a0  과정과 같은 5지선다 형식의 테스트 문항',options:['선택지1','선택지2','선택지3','선택지4','선택지5'],answer:1,explanation:'정답해설\n근거 설명을 그대로 유지합니다.\n오답분석\n각 선지의 이유를 설명합니다.'})),theory:{law:[{title:'안전보건교육',body:'관련 법과 시행령, 시행규칙 본문',trap:'주체와 교육시간 구별'}],general:[],corp:[]},videos:[]}};
  const root={};new Function('globalThis','module',load('gameSource:shared-v9/core.js'))(root,{exports:{}});
  if(withGarden){new Function('globalThis','module',load('gameNew:shared-v9/garden-core.js'))(root,{exports:{}});new Function('globalThis','module',load('gameNew:shared-v9/garden-ui.js'))(root,{exports:{}});window.StudyGarden=root.StudyGarden;window.StudyGarden3D={mount:(host,state)=>frames.push(state.climb)};}
  await new Function('window','StudyCore','document','localStorage','indexedDB','navigator','location','console','setTimeout','clearTimeout','return '+load('gameNew:shared-v9/app.js'))(window,root.StudyCore,document,storage,{open(){throw new Error('test no IndexedDB')}},{},{protocol:'https:'},{error:e=>errors.push(String(e))},()=>0,()=>{});
@@ -15,7 +15,7 @@ async function integrationTest(layout,withGarden=true){
  assert(html.includes('마스터의 합격 콩나무'),'game home mounted');assert(classes.has('garden-enabled'),'game style enabled');
  await press({gameAction:'daily'});assert(html.includes('1 / 60문제'),'quest HUD');assert(!html.includes('garden-reward '),'no reward before grading');
  await press({action:'next-question'});assert(html.includes('1 / 60문제'),'unanswered question cannot skip quest');
- await press({choice:'2'});await press({action:'grade'});let xp=state().xp;const originalHeight=state().climb;assert(frames.length>0,'3D scene receives growth state');assert(html.includes('data-garden-3d'),'3D scene mounted in question view');assert(html.includes('+2 XP'),'wrong answer gets encouragement');assert(html.includes('선택지5'),'five choices preserved');
+ await press({choice:'2'});await press({action:'grade'});let xp=state().xp;const originalHeight=state().climb;assert(frames.length>0,'3D scene receives growth state');assert(html.includes('data-garden-3d'),'3D scene mounted in question view');assert(html.includes('+2 XP'),'wrong answer gets encouragement');assert(html.includes('선택지5'),'five choices preserved');assert(html.includes('실제 과정과 같은'),'wide PDF spaces normalized in question text');
  await press({action:'grade'});assert(state().xp===xp,'double grade cannot award twice');
  await press({action:'retry'});await press({choice:'1'});await press({action:'grade'});assert(state().xp===xp+8,'correcting wrong answer awards only remaining points');assert(state().climb===originalHeight+1,'correct answer advances one 3D platform');
  xp=state().xp;await press({action:'retry'});await press({choice:'1'});await press({action:'grade'});assert(state().xp===xp,'correct answer retry has no duplicate XP');assert(state().climb===originalHeight+1,'repeated answer cannot farm altitude');
@@ -56,7 +56,12 @@ function modelTests(){
  const partial=G.create({now:()=>clock,random:()=>.4});for(let i=0;i<7;i++)partial.answer('b'+i,true,false,'law');const remaining=partial.plan(bank);assert.equal(remaining.length,53);assert.equal(remaining.filter(id=>bank.find(q=>q.id===id).subject==='law').length,13);
  const unbalanced=G.create({now:()=>clock});for(let i=0;i<60;i++)unbalanced.answer('law-only-'+i,true,false,'law');assert.equal(unbalanced.missions()[0].count,20);assert.equal(unbalanced.missions()[0].ready,false);
  const legacy=G.create({storage:{getItem:()=>JSON.stringify({version:1,seeded:true,days:{'2026-11-20':{questions:{b0:{correct:true}},claims:{study:true}}}}),setItem(){ }},now:()=>clock});legacy.syncSubjects(bank);assert.equal(legacy.view().subjectCounts.law,1);assert.equal(legacy.missions()[0].claimed,false);
- const oldHeight=g.view().climb;g.answer('3d-test',false,false,'law');assert.equal(g.view().climb,oldHeight);g.answer('3d-test',true,true,'law');assert.equal(g.view().climb,oldHeight+1);g.answer('3d-test',true,true,'law');assert.equal(g.view().climb,oldHeight+1);
+ const oldHeight=g.view().climb;g.answer('3d-test',false,false,'law');assert.equal(g.view().climb,Math.max(0,oldHeight-1));g.answer('3d-test',true,true,'law');assert.equal(g.view().climb,Math.max(0,oldHeight-1)+1);g.answer('3d-test',true,true,'law');assert.equal(g.view().climb,Math.max(0,oldHeight-1)+1);
+ const floor=G.create({now:()=>clock});for(let i=0;i<5;i++)floor.answer('floor',false,false,'law');assert.equal(floor.view().climb,0);
+ let persisted=null;const ps={getItem:()=>persisted,setItem:(key,value)=>persisted=value};const penalty=G.create({storage:ps,now:()=>clock});for(let i=0;i<3;i++)penalty.answer('up-'+i,true,false,'law');
+ assert.equal(penalty.view().climb,3);assert.equal(penalty.answer('down',false,false,'law').fell,true);assert.equal(penalty.view().climb,2);
+ penalty.answer('down',false,false,'law');assert.equal(penalty.view().climb,1);penalty.answer('down',true,true,'law');assert.equal(penalty.view().climb,2);
+ penalty.answer('down',false,false,'law');const noNewXp=penalty.view().xp;const reloadedPenalty=G.create({storage:ps,now:()=>clock});assert.equal(reloadedPenalty.answer('down',true,true,'law').climbed,true);assert.equal(reloadedPenalty.view().climb,2);assert.equal(reloadedPenalty.view().xp,noNewXp);
  assert.equal(G.dayKey(new Date('2026-11-17T15:01:00Z')),'2026-11-18');
  return 'growth, mission, review spacing, streak, backup and shop invariants passed';
 }
@@ -71,6 +76,7 @@ function rendererTests(source){
  ok(R.math.pose(9,10,0).every((x,i)=>near(x,R.math.point(9)[i])),'jump starts on old platform');
  ok(R.math.pose(9,10,1).every((x,i)=>near(x,R.math.point(10)[i])),'jump lands on next platform');
  ok(R.math.pose(9,10,.5)[1]>(R.math.point(9)[1]+R.math.point(10)[1])/2,'jump has a visible arc');
+ ok(R.math.pose(9,8,1).every((x,i)=>near(x,R.math.point(8)[i])),'wrong answer lands exactly one platform below');ok([.1,.3,.5,.7,.9].every(t=>R.math.pose(9,8,t)[1]<R.math.point(9)[1]&&R.math.pose(9,8,t)[1]>R.math.point(8)[1]),'fall accelerates downward without upward bounce');
  ok(R.math.pose(9,9,.5).every((x,i)=>near(x,R.math.point(9)[i])),'unchanged altitude does not jump');
  for(const [name,[positions,normals]]of Object.entries(R.meshes()))ok(positions.length===normals.length&&positions.length%9===0&&positions.every(Number.isFinite)&&normals.every(Number.isFinite),'valid 3D mesh '+name);
  let draws=0,matrices=0;const materials=new Set();
@@ -93,7 +99,7 @@ function rendererTests(source){
  ok(runtime.created===1&&runtime.contexts===1,'one canvas and WebGL context reused across app rerenders');
  ok(b.dataset.jumping==='true','correct answer starts visible jump animation');
  runtime.frames[runtime.frames.length-1](1300);ok(b.dataset.jumping==='false','jump settles after landing');
- runtime.StudyGarden3D.mount(null,{});
+ runtime.performance.now=()=>1400;runtime.StudyGarden3D.mount(a,{climb:0,equipped:'mint'});runtime.frames[runtime.frames.length-1](1950);ok(a.dataset.falling==='true','wrong answer activates descent cue');runtime.frames[runtime.frames.length-1](2700);ok(a.dataset.falling==='false','fall ends on lower platform');runtime.StudyGarden3D.mount(null,{});
  const fallbackRoot={document:{createElement:()=>({setAttribute(){},addEventListener(){},getContext:()=>null})},performance:{now:()=>0},addEventListener(){}};
  new Function('globalThis','module',source)(fallbackRoot,{exports:{}});const fallbackHost={innerHTML:''};fallbackRoot.StudyGarden3D.mount(fallbackHost,{climb:3,equipped:'mint'});ok(fallbackHost.innerHTML.includes('간편 3D 모드')&&fallbackHost.innerHTML.includes('3칸'),'unsupported WebGL has working 3D fallback');
 

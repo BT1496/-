@@ -236,7 +236,7 @@
   }).join('');
  }
  function formatQuestionStatements(value){
-  const source=String(value||'');
+  const source=normalizeQuestionSpacing(value);
   const parts=source.split(/\r?\n/);
   const label=/^\s*([ㄱㄴㄷㄹㅁㅂ])[.)]\s*(.*)$/;
   const matched=parts.filter(x=>label.test(x));
@@ -252,8 +252,11 @@
   }
   tab();plain();return result;
  }
+ function normalizeQuestionSpacing(value){
+ return String(value??'').replace(/\r\n?/g,'\n').replace(/[\u200b\u200c\u200d\ufeff]/g,'').replace(/[\u00a0\u2000-\u200a\u202f\u205f\u3000]/g,' ').split('\n').map(line=>line.replace(/[ \t]+/g,' ').trim()).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
  function readableQuestionOcr(value){
-  let text=String(value||'').replace(/\r\n?/g,'\n');
+  let text=normalizeQuestionSpacing(value);
   // Conservative spacing improvements in the display layer; the original exam content remains unchanged.
   const rules=[
    [/산업안전보건기준에관한규칙상/g,'산업안전보건기준에 관한 규칙상 '],
@@ -281,7 +284,7 @@
  }
  function questionDisplayParts(q){
   const original=String(q.text||'');
-  if(Array.isArray(q.options)&&q.options.length===5&&q.options.every(x=>String(x||'').trim()))return {text:original,options:q.options};
+  if(Array.isArray(q.options)&&q.options.length===5&&q.options.every(x=>String(x||'').trim()))return {text:readableQuestionOcr(original),options:q.options.map(option=>readableQuestionOcr(option))};
   const found=[...original.matchAll(/^[ \t]*([①②③④⑤])[ \t]*/gm)];
   const last=found.slice(-5);
   // Choose the last complete set: some legal texts contain article numbers ①, ②, ③ in the stem.

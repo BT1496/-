@@ -16,7 +16,7 @@ function clean(raw){
  for(const [day,d]of Object.entries(raw.days||{}).slice(-120)){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!d||typeof d!=='object')continue;
   const b={questions:dict(),lessons:dict(),claims:dict(),combo:integer(d.combo,5000),best:integer(d.best,5000),boss:d.boss===true};
-  for(const [id,q]of Object.entries(d.questions||{}).slice(0,3000))if(validId(id)&&q&&typeof q==='object')b.questions[id]={correct:q.correct===true,review:q.review===true,subject:SUBJECTS.includes(q.subject)?q.subject:null};
+  for(const [id,q]of Object.entries(d.questions||{}).slice(0,3000))if(validId(id)&&q&&typeof q==='object')b.questions[id]={correct:q.correct===true,review:q.review===true,subject:SUBJECTS.includes(q.subject)?q.subject:null,lastCorrect:typeof q.lastCorrect==='boolean'?q.lastCorrect:q.correct===true};
   for(const id of Object.keys(d.lessons||{}).slice(0,1000))if(validId(id))b.lessons[id]=true;
   for(const id of ['study','study60','review','theory'])if(d.claims?.[id]===true)b.claims[id]=true;
   s.days[day]=b;
@@ -43,14 +43,14 @@ function create(options={}){
  }
  function answer(id,correct,wasWrong=false,subject=null){
   if(!validId(String(id)))return {xp:0,coins:0,duplicate:true};
-  id=String(id);correct=correct===true;const d=today(),before=view().level,previous=d.questions[id];let xp=0,coins=0;
-  if(!previous){d.questions[id]={correct,review:correct&&wasWrong,subject:SUBJECTS.includes(subject)?subject:null};xp=correct?10:2;if(correct){coins=1;d.combo++;d.best=Math.max(d.best,d.combo);if(d.combo%3===0)xp+=2;}else d.combo=0;}
+  id=String(id);correct=correct===true;const d=today(),before=view().level,previous=d.questions[id],recover=previous?.lastCorrect===false;let xp=0,coins=0;
+  if(!previous){d.questions[id]={correct,review:correct&&wasWrong,subject:SUBJECTS.includes(subject)?subject:null,lastCorrect:correct};xp=correct?10:2;if(correct){coins=1;d.combo++;d.best=Math.max(d.best,d.combo);if(d.combo%3===0)xp+=2;}else d.combo=0;}
   else if(correct&&!previous.correct){previous.correct=true;previous.review=true;xp=8;coins=1;}
   const old=s.progress[id]||{box:0,due:dayKey(now())};
   if(!previous||correct&&!previous.correct||!correct){const box=correct?Math.min(5,old.box+1):0;s.progress[id]={box,due:addDays(dayKey(now()),correct?[1,1,3,7,14,30][box]:0)};}
   // A corrected retry still advances the review schedule exactly once.
-  if(previous&&correct&&xp>0)s.progress[id]={box:Math.min(5,old.box+1),due:addDays(dayKey(now()),1)};
-  const climbed=correct&&xp>0;if(climbed)s.climb++;s.xp+=xp;s.coins+=coins;active();save();return {xp,coins,climbed,height:s.climb,correct,duplicate:xp===0,levelUp:view().level>before,level:view().level,combo:d.combo};
+  if(previous&&correct&&(xp>0||recover))s.progress[id]={box:Math.min(5,old.box+1),due:addDays(dayKey(now()),1)};
+  const climbed=correct&&(xp>0||recover),fell=!correct&&s.climb>0,bottom=!correct&&!fell;if(climbed)s.climb++;else if(fell)s.climb--;if(previous&&correct&&recover)previous.review=true;d.questions[id].lastCorrect=correct;if(!correct)d.combo=0;s.xp+=xp;s.coins+=coins;active();save();return {xp,coins,climbed,fell,bottom,height:s.climb,correct,duplicate:xp===0,levelUp:view().level>before,level:view().level,combo:d.combo};
  }
  function lesson(id){if(!validId(id))return {xp:0};const d=today();if(d.lessons[id])return {xp:0,duplicate:true};d.lessons[id]=true;const xp=s.lessonAwards[id]?0:15;s.lessonAwards[id]=true;s.xp+=xp;active();save();return {xp};}
  function missions(){const v=view();return [{id:'study60',name:'콩나무 60칸 오르기',hint:'법령 20 · 일반 20 · 기업진단·지도 20문제',count:v.dailyProgress,target:60,xp:75,coins:24},{id:'review',name:'오답 몬스터 물리치기',hint:'틀렸던 문제 5개 다시 맞히기',count:v.reviews,target:5,xp:20,coins:8},{id:'theory',name:'지식의 물 주기',hint:'이론 1단원 학습완료',count:v.lessons,target:1,xp:10,coins:4}].map(m=>({...m,claimed:!!v.claims[m.id],ready:m.count>=m.target&&!v.claims[m.id]}));}
@@ -65,7 +65,7 @@ function create(options={}){
   return chosen.sort((a,b)=>SUBJECTS.indexOf(a.subject)-SUBJECTS.indexOf(b.subject)).map(q=>String(q.id));
  }
  function finish(mode,correct,total){const d=today(),won=mode==='boss'&&total>=3&&correct>=Math.ceil(total*.6);let xp=0,coins=0;if(won&&!d.boss){d.boss=true;xp=15;coins=5;s.xp+=xp;s.coins+=coins;save();}return {won,xp,coins};}
- function restore(raw){if(!raw||raw.version!==1)throw new Error('성장 기록 형식이 올바르지 않습니다.');const extra=clean(raw);s.xp=Math.max(s.xp,extra.xp);s.climb=Math.max(s.climb,extra.climb);s.coins=Math.max(s.coins,extra.coins);s.streak=Math.max(s.streak,extra.streak);if(extra.lastDay>s.lastDay)s.lastDay=extra.lastDay;s.badges=[...new Set([...s.badges,...extra.badges])];s.seeded=s.seeded||extra.seeded;s.migrated=Math.max(s.migrated,extra.migrated);s.owned=[...new Set([...s.owned,...extra.owned])];if(s.owned.includes(extra.equipped))s.equipped=extra.equipped;for(const [day,b]of Object.entries(extra.days)){if(!s.days[day])s.days[day]=b;else{const target=s.days[day];for(const [id,q]of Object.entries(b.questions)){const own=target.questions[id];target.questions[id]={correct:q.correct||!!own?.correct,review:q.review||!!own?.review,subject:SUBJECTS.includes(own?.subject)?own.subject:q.subject};}Object.assign(target.lessons,b.lessons);Object.assign(target.claims,b.claims);target.boss=target.boss||b.boss;}}for(const [id,p]of Object.entries(extra.progress))if(!s.progress[id]||p.box>s.progress[id].box)s.progress[id]=p;Object.assign(s.lessonAwards,extra.lessonAwards);save();}
+ function restore(raw){if(!raw||raw.version!==1)throw new Error('성장 기록 형식이 올바르지 않습니다.');const extra=clean(raw);s.xp=Math.max(s.xp,extra.xp);s.climb=Math.max(s.climb,extra.climb);s.coins=Math.max(s.coins,extra.coins);s.streak=Math.max(s.streak,extra.streak);if(extra.lastDay>s.lastDay)s.lastDay=extra.lastDay;s.badges=[...new Set([...s.badges,...extra.badges])];s.seeded=s.seeded||extra.seeded;s.migrated=Math.max(s.migrated,extra.migrated);s.owned=[...new Set([...s.owned,...extra.owned])];if(s.owned.includes(extra.equipped))s.equipped=extra.equipped;for(const [day,b]of Object.entries(extra.days)){if(!s.days[day])s.days[day]=b;else{const target=s.days[day];for(const [id,q]of Object.entries(b.questions)){const own=target.questions[id];target.questions[id]={correct:q.correct||!!own?.correct,review:q.review||!!own?.review,subject:SUBJECTS.includes(own?.subject)?own.subject:q.subject,lastCorrect:typeof own?.lastCorrect==='boolean'?own.lastCorrect:q.lastCorrect};}Object.assign(target.lessons,b.lessons);Object.assign(target.claims,b.claims);target.boss=target.boss||b.boss;}}for(const [id,p]of Object.entries(extra.progress))if(!s.progress[id]||p.box>s.progress[id].box)s.progress[id]=p;Object.assign(s.lessonAwards,extra.lessonAwards);save();}
  return {view,syncSubjects,seed,answer,lesson,missions,claim,equip,dueIds,plan,finish,restore,export:()=>JSON.parse(JSON.stringify(s))};
 }
 const api={create,dayKey,addDays,HELMETS};root.StudyGardenCore=api;if(typeof module!=='undefined')module.exports=api;

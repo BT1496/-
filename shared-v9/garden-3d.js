@@ -9,7 +9,8 @@ function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[
 function lookAt(eye,target){const z=normalized(eye.map((v,i)=>v-target[i])),x=normalized(cross([0,1,0],z)),y=cross(z,x),dot=(a,b)=>a.reduce((n,v,i)=>n+v*b[i],0);return [x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1];}
 function model(x,y,z,sx,sy,sz,angle=0){const c=Math.cos(angle),s=Math.sin(angle);return [c*sx,0,-s*sx,0,0,sy,0,0,s*sz,0,c*sz,0,x,y,z,1];}
 function point(n){return [Math.sin(n*.92)*1.28,n*STEP,Math.cos(n*.92)*.83];}
-function pose(from,to,t){t=clamp(t,0,1);const ease=t*t*(3-2*t),a=point(from),b=point(to);return a.map((v,i)=>v+(b[i]-v)*ease+(i===1&&from!==to?Math.sin(Math.PI*t)*.83:0));}
+function easing(from,to,t){return to<from?t*t:t*t*(3-2*t);}
+function pose(from,to,t){t=clamp(t,0,1);const ease=easing(from,to,t),a=point(from),b=point(to);return a.map((v,i)=>v+(b[i]-v)*ease+(i===1&&to>from?Math.sin(Math.PI*t)*.83:0));}
 function trunkCenter(y){return [Math.sin(y*.31)*.19,y,Math.cos(y*.23)*.14];}
 function trunkRadius(y){return Math.max(.23,.49-Math.log1p(Math.max(0,y))*.035);}
 function treeMesh(base){
@@ -64,7 +65,7 @@ function painter(gl){
  let trunkBase=0;
  return function frame(v){
   const sky=['#d5eddf','#beddd0','#d5e8fb','#27374e'][v.theme||0],rgb=color(sky);gl.viewport(0,0,v.width,v.height);gl.clearColor(...rgb,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(program);gl.uniform3fv(u.Sky,new Float32Array(rgb));
-  const h=v.from+(v.to-v.from)*(v.phase*v.phase*(3-2*v.phase)),base=Math.floor(h),origin=base*STEP,follow=h*STEP-origin,angle=Number.isFinite(v.yaw)?v.yaw:.55,eye=[Math.sin(angle)*6.4,follow+3.6,Math.cos(angle)*6.4],vp=multiply(perspective(.72,v.width/v.height,.1,50),lookAt(eye,[0,follow+.85,0]));
+  const h=v.from+(v.to-v.from)*easing(v.from,v.to,v.phase),base=Math.floor(h),origin=base*STEP,follow=h*STEP-origin,angle=Number.isFinite(v.yaw)?v.yaw:.55,eye=[Math.sin(angle)*6.4,follow+3.6,Math.cos(angle)*6.4],vp=multiply(perspective(.72,v.width/v.height,.1,50),lookAt(eye,[0,follow+.85,0]));
   gl.uniformMatrix4fv(u.VP,false,new Float32Array(vp));
   if(trunkBase!==base){const [p,n]=treeMesh(base),b=buffers.trunk;gl.bindBuffer(gl.ARRAY_BUFFER,b.p);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(p),gl.STATIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,b.n);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(n),gl.STATIC_DRAW);b.count=p.length/3;trunkBase=base;}
   drawM('trunk',identity(),'#987153',1);
@@ -102,13 +103,13 @@ function painter(gl){
 }
 let instance=null;
 function createInstance(){
- const canvas=root.document.createElement('canvas');canvas.className='garden-3d-canvas';canvas.tabIndex=0;canvas.setAttribute('role','img');canvas.setAttribute('aria-label','3D 숲속 정령 모험. 정답을 맞히면 나뭇가지 발판을 딛고 올라갑니다. 좌우로 드래그해 둘러보세요.');
+ const canvas=root.document.createElement('canvas');canvas.className='garden-3d-canvas';canvas.tabIndex=0;canvas.setAttribute('role','img');canvas.setAttribute('aria-label','3D 숲속 정령 모험. 정답이면 한 칸 올라가고 오답이면 한 칸 내려갑니다. 좌우로 드래그해 둘러보세요.');
  let gl=null,paint=null;try{gl=canvas.getContext('webgl',{alpha:false,antialias:true,powerPreference:'low-power'});if(gl)paint=painter(gl);}catch(e){paint=null;}
  let host=null,raf=0,yaw=.55,from=0,to=0,start=0,initialized=false,state={},drag=null,lost=false,lastFrame=-100;
  const reduced=()=>!!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  function phase(time){return reduced()?1:clamp((time-start)/1100,0,1);}
  function schedule(){if(!raf&&paint&&host&&!lost)raf=root.requestAnimationFrame(loop);}
- function loop(time){raf=0;if(!host||!host.isConnected||lost)return;if(time-lastFrame>=31){lastFrame=time;const rect=host.getBoundingClientRect(),dpr=Math.min(root.devicePixelRatio||1,1.75),width=Math.max(1,Math.round(rect.width*dpr)),height=Math.max(1,Math.round(rect.height*dpr));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}const p=phase(time);host.dataset.jumping=p<1&&to>from?'true':'false';paint({from,to,phase:p,yaw,time:reduced()?0:time,reduced:reduced(),theme:state.theme||0,helmet:state.helmet,width,height});if(p===1)from=to;}if(!reduced()||phase(time)<1)schedule();}
+ function loop(time){raf=0;if(!host||!host.isConnected||lost)return;if(time-lastFrame>=31){lastFrame=time;const rect=host.getBoundingClientRect(),dpr=Math.min(root.devicePixelRatio||1,1.75),width=Math.max(1,Math.round(rect.width*dpr)),height=Math.max(1,Math.round(rect.height*dpr));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}const p=phase(time);host.dataset.jumping=p<1&&to>from?'true':'false';host.dataset.falling=p<1&&to<from?'true':'false';paint({from,to,phase:p,yaw,time:reduced()?0:time,reduced:reduced(),theme:state.theme||0,helmet:state.helmet,width,height});if(p===1)from=to;}if(!reduced()||phase(time)<1)schedule();}
  function fallback(){
  const span=Math.max(0,to),spirit=root.StudyGarden?.mascot?.(state.helmet,'숲속 씨앗 정령')||'<span>🌿</span><b>●</b>';
  host.innerHTML='<div class="garden-css-scene" role="img" aria-label="간편 3D 나무 모험, 현재 '+span+'칸"><div class="garden-css-world"><div class="garden-css-trunk"></div>'+Array.from({length:7},(_,i)=>'<i class="garden-css-step" style="--step:'+i+'"></i>').join('')+'<div class="garden-css-player" style="--rise:'+(span%7)+'">'+spirit+'</div></div></div><span class="garden-3d-mode">간편 3D 모드</span>';

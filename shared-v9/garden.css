@@ -138,3 +138,7 @@ body.mobile-layout.garden-enabled .mobile-nav button.active{color:#207653}
 .garden-css-step::before{content:"";position:absolute;width:60px;height:10px;left:-39px;top:16px;background:#82603e;border-radius:80% 20%;transform:translateZ(-8px) rotateZ(-18deg)}
 .garden-css-step::after{content:"";position:absolute;width:38px;height:19px;right:-12px;top:-8px;border-radius:2px 100% 2px 100%;background:linear-gradient(20deg,#6d944c,#a0bc72);transform:rotateZ(-20deg)}
 .garden-css-player svg{width:54px;height:66px;filter:drop-shadow(0 4px 3px #49613435)}
+
+.garden-3d-fall{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);white-space:nowrap;background:#f8dfc5;color:#765039;font-size:.75rem;font-weight:800;border:1px solid #d8ad82;border-radius:12px;padding:9px 13px;opacity:0;transition:opacity .15s;pointer-events:none;box-shadow:0 4px 12px #8b66442b}
+.garden-3d-frame:has(.garden-3d-mount[data-falling="true"]) .garden-3d-fall{opacity:1}
+@media(prefers-reduced-motion:reduce){.garden-3d-fall{transition:none}}
