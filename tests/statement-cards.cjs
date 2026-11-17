@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const app=fs.readFileSync(require('node:path').join(__dirname,'../shared-v9/app.js'),'utf8');
-const fn=app.slice(app.indexOf('function formatQuestionStatements'),app.indexOf(' function normalizeQuestionSpacing'));
+const fn=app.slice(app.indexOf('function questionParagraphs'),app.indexOf(' function normalizeQuestionSpacing'));
 const normalize=app.slice(app.indexOf('function normalizeQuestionSpacing'),app.indexOf(' function readableQuestionOcr'));
 const E=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const format=new Function('E',normalize+'\n'+fn+';return formatQuestionStatements;')(E);

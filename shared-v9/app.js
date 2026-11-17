@@ -236,19 +236,25 @@
     return m?'<div class="solution-line solution-numbered"><span class="solution-marker">'+E(m[1])+'</span><span class="solution-content">'+E(m[2].trim())+'</span></div>':'<div class="solution-line">'+E(t)+'</div>';
   }).join('');
  }
+ function questionParagraphs(value){
+  const source=normalizeQuestionSpacing(value);
+  // PDF line endings are presentation breaks; let the browser wrap each paragraph.
+  const paragraphs=source.split(/\n\s*\n/).map(p=>p.replace(/\n/g,' ').replace(/[ \t]+/g,' ').trim()).filter(Boolean);
+  return '<section class="question-reading" aria-label="문제 본문"><span class="question-reading-label">문제</span>'+paragraphs.map(p=>'<p class="question-reading-paragraph">'+E(p)+'</p>').join('')+'</section>';
+ }
  function formatQuestionStatements(value){
   const source=normalizeQuestionSpacing(value);
   // Start only at a real statement block; preserve parenthetical blanks and prose.
   const first=/^\s*ㄱ[.)][ \t]*/m.exec(source);
-  if(!first)return '<div class="question-text">'+E(source)+'</div>';
+  if(!first)return questionParagraphs(source);
   const block=source.slice(first.index);
   const markers=[...block.matchAll(/(^|\s)([ㄱㄴㄷㄹㅁㅂ])[.)][ \t]*/g)];
   const order='ㄱㄴㄷㄹㅁㅂ';
-  if(markers.length<2||markers.some((m,i)=>m[2]!==order[i]))return '<div class="question-text">'+E(source)+'</div>';
+  if(markers.length<2||markers.some((m,i)=>m[2]!==order[i]))return questionParagraphs(source);
   const lead=source.slice(0,first.index).trim();
   const rows=markers.map((m,i)=>({label:m[2],text:block.slice(m.index+m[0].length,i+1<markers.length?markers[i+1].index:block.length).trim()}));
-  if(rows.some(row=>!row.text))return '<div class="question-text">'+E(source)+'</div>';
-  return (lead?'<div class="question-text">'+E(lead)+'</div>':'')+
+  if(rows.some(row=>!row.text))return questionParagraphs(source);
+  return (lead?questionParagraphs(lead):'')+
    '<dl class="question-statement-cards" aria-label="문제 보기">'+rows.map(row=>
     '<div class="question-statement-card"><dt>'+E(row.label)+'.</dt><dd>'+E(row.text)+'</dd></div>'
    ).join('')+'</dl>';
@@ -329,7 +335,7 @@
  let ex=`<div class="prose solution-prose">${formatConceptOnly(originalExplanation)}${supplementaryConcept?formatConceptOnly('개념정리\n'+supplementaryConcept)+'<p class="small muted">보충 학습자료 · 법령의 세부 수치·대상은 현행 원문으로 확인하세요.</p>'+conceptSourceLink:''}${relatedConceptHtml}</div>`;
  const bookImages=q.textbookExplanationImages||[];
  const bookBody=bookImages.length?`<p class="caption">개인교재 원본 해설 · ${q.year}년 ${q.no}번${q.page?` · 교재 ${q.page}쪽`:''}</p>${q.lawReview||q.subject==='law'?'<p class="notice">교재 발행 당시의 해설입니다. 개정된 규정은 2026년 기준 풀이·해설과 근거 법령을 확인하세요.</p>':''}${q.lawAdapted?'<p class="notice">이 문항은 개정법에 맞춰 수정되었습니다. 교재 원본의 문제·정답과 앱의 문제·정답이 다를 수 있습니다.</p>':''}${bookImages.map(src=>qImage(src,'개인교재 원본 해설')).join('')}`:q.year===2026?'<p class="small muted">2026년 문제는 이 개인교재에 수록되어 있지 않습니다.</p>':course.questions.some(x=>x.textbookExplanationImages?.length)?'<p class="small muted">이 문항은 교재 원본 해설 이미지를 아직 확보하지 못했습니다. 위 풀이·해설을 이용해 주세요.</p>':'<p class="small">개인학습자료 JSON을 한 번 불러오면 교재 원본 해설이 이 기기에 저장되어 다음 실행부터 자동으로 연결됩니다.</p><button data-action="settings">개인학습자료 불러오기</button>';
- const display=questionDisplayParts(q),displayOptions=display.options,officialImageFirst=q.year===2026&&q.questionImages?.length&&!Array.isArray(q.options)&&!(q.subject==='law'&&[1,2,5,6].includes(q.no));
+ const display=questionDisplayParts(q),displayOptions=display.options,officialImageFirst=!displayOptions&&q.year===2026&&q.questionImages?.length&&!Array.isArray(q.options)&&!(q.subject==='law'&&[1,2,5,6].includes(q.no));
  const explanationPanels=disclosure(q.lawReview==='verified'?'2026년 기준 풀이·해설 보기':'풀이·해설 보기',ex)+disclosure('개인교재 원본 해설 보기',bookBody);
  const relatedLessons=(course.theory?.[q.subject]||[]).map((t,i)=>({...t,index:i})).filter(t=>(q.topicKey&&t.body.includes(q.topicKey))||t.title.includes(q.topic?.split(' ')[0]||'__')).slice(0,5);
  return `${game?game.hud(gameRun):''}<button class="back text-btn" data-action="all-questions">← 문제 목록</button>${randomQuestionIds&&randomQuestionIndex>=0?`<p class="caption">무작위 풀이 · ${E(subjectName(q.subject))} (${RANDOM_SUBJECT_ORDER.indexOf(q.subject)+1}과목) · ${randomQuestionIndex+1}/${randomQuestionIds.length}문제 · 1→2→3과목 순서</p>`:''}<div class="question-layout"><section class="card question-card">${meta(q)}${warning}${officialImageFirst?`<p class="question-original-label">공식 문제 원문 · 정확한 띄어쓰기 확인 (터치하여 확대)</p><div class="question-official-scan">${q.questionImages.map(src=>qImage(src)).join('')}</div>${disclosure('문제 텍스트 보기 · 띄어쓰기 일부 보정',formatQuestionStatements(display.text))}`:displayOptions?formatQuestionStatements(display.text):q.questionImages?.length?q.questionImages.map(src=>qImage(src)).join(''):formatQuestionStatements(display.text)}${q.table?tableMarkup(q.table):''}${q.questionImages?.length&&!officialImageFirst?(displayOptions?disclosure('문제 원문 보기',q.questionImages.map(src=>qImage(src)).join('')):'<div class="image-hint">원문을 누르면 확대할 수 있습니다.</div>'):''}<div class="${displayOptions?'options':'number-options'}">${NUM.map((n,i)=>`<button class="option ${choice===i+1?'selected':''}" data-choice="${i+1}" aria-pressed="${choice===i+1}" ${revealed?'disabled':''}><span class="option-num">${n}</span>${displayOptions?`<span class="option-body">${E(displayOptions[i])}</span>`:''}</button>`).join('')}</div>${revealed?`<div class="result" role="status">${canGrade?`${q.lawReview==='pending'?'수록 정답(현행법 검토 대기)':'정답'}: <span class="answer-num">${answers.map(a=>NUM[a-1]).join(', ')}</span> <span class="muted small">${C.answerMatches(q,choice)?'정답입니다.':'다시 확인해 보세요.'}</span>`:'정답 검증 대기 · 채점하지 않습니다.'}</div><button class="wide" data-action="retry">다시 풀기</button>`:`<button class="primary wide" data-action="grade" ${choice?'':'disabled'}>정답 확인</button>`}${game&&revealed&&gameReward?game.reward(gameReward):''}<div class="question-actions"><button data-action="star" aria-pressed="${!!r.starred}">${r.starred?'★ 즐겨찾기 해제':'☆ 즐겨찾기'}</button><button data-action="next-question">다음 문제 →</button></div><p class="footer-note">${E(q.source||'한국산업인력공단 Q-Net 공개 기출')} · ${q.page?`원문 ${q.page}쪽`:''}</p></section><aside class="explain-panel">${revealed?explanationPanels:'<div class="card"><h3>풀이·해설</h3><p class="muted small">답을 선택하고 정답을 확인하면 해설 버튼을 사용할 수 있습니다. 해설은 직접 눌러야 펼쳐집니다.</p></div>'}${disclosure('관련 이론 공부',relatedLessons.length?relatedLessons.map(t=>`<button class="list-item" data-lesson="${t.index}" data-lesson-subject="${q.subject}">${E(t.title)} →</button>`).join(''):`<button data-theory-subject="${q.subject}">${E(subjectName(q.subject))} 전체 이론 보기</button>`)}${q.subject==='law'||q.lawReview?disclosure('근거 법령 원문 보기',legalSources(q)):''}${disclosure('관련 강의 보기',relatedVideos(q).map(videoMini).join('')||`<p class="muted small">연결된 강의가 없습니다.</p><button data-video-subject="${q.subject==='law'?'':q.subject}">전체 강의에서 찾아보기</button>`)}${disclosure('내 메모',`<label class="small" for="q-note">이 문제에서 기억할 내용</label><textarea id="q-note" class="notes" maxlength="10000" placeholder="메모는 이 기기에 저장됩니다.">${E(r.note||'')}</textarea><button data-action="save-note">메모 저장</button>`)}</aside></div>`;}
