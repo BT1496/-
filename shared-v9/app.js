@@ -238,20 +238,20 @@
  }
  function formatQuestionStatements(value){
   const source=normalizeQuestionSpacing(value);
-  const parts=source.split(/\r?\n/);
-  const label=/^\s*([ㄱㄴㄷㄹㅁㅂ])[.)]\s*(.*)$/;
-  const matched=parts.filter(x=>label.test(x));
-  if(matched.length<2)return '<div class="question-text">'+E(source)+'</div>';
-  let result='',buffer=[],rows=[];
-  function plain(){if(buffer.length){result+='<div class="question-text">'+E(buffer.join('\n'))+'</div>';buffer=[];}}
-  function tab(){if(rows.length){result+='<table class="question-statement-table"><tbody>'+rows.map(x=>'<tr><th scope="row">'+E(x[0])+'</th><td>'+E(x[1])+'</td></tr>').join('')+'</tbody></table>';rows=[];}}
-  for(const part of parts){
-   const m=part.match(label);
-   if(m){plain();rows.push([m[1],m[2]]);}
-   else if(rows.length&&part.trim()){rows[rows.length-1][1]+='\n'+part;}
-   else {tab();buffer.push(part);}
-  }
-  tab();plain();return result;
+  // Start only at a real statement block; preserve parenthetical blanks and prose.
+  const first=/^\s*ㄱ[.)][ \t]*/m.exec(source);
+  if(!first)return '<div class="question-text">'+E(source)+'</div>';
+  const block=source.slice(first.index);
+  const markers=[...block.matchAll(/(^|\s)([ㄱㄴㄷㄹㅁㅂ])[.)][ \t]*/g)];
+  const order='ㄱㄴㄷㄹㅁㅂ';
+  if(markers.length<2||markers.some((m,i)=>m[2]!==order[i]))return '<div class="question-text">'+E(source)+'</div>';
+  const lead=source.slice(0,first.index).trim();
+  const rows=markers.map((m,i)=>({label:m[2],text:block.slice(m.index+m[0].length,i+1<markers.length?markers[i+1].index:block.length).trim()}));
+  if(rows.some(row=>!row.text))return '<div class="question-text">'+E(source)+'</div>';
+  return (lead?'<div class="question-text">'+E(lead)+'</div>':'')+
+   '<dl class="question-statement-cards" aria-label="문제 보기">'+rows.map(row=>
+    '<div class="question-statement-card"><dt>'+E(row.label)+'.</dt><dd>'+E(row.text)+'</dd></div>'
+   ).join('')+'</dl>';
  }
  function normalizeQuestionSpacing(value){
  return String(value??'').replace(/\r\n?/g,'\n').replace(/[\u200b\u200c\u200d\ufeff]/g,'').replace(/[\u00a0\u2000-\u200a\u202f\u205f\u3000]/g,' ').split('\n').map(line=>line.replace(/[ \t]+/g,' ').trim()).join('\n').replace(/\n{3,}/g,'\n\n').trim();

@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const app=fs.readFileSync(require('node:path').join(__dirname,'../shared-v9/app.js'),'utf8');
+const fn=app.slice(app.indexOf('function formatQuestionStatements'),app.indexOf(' function normalizeQuestionSpacing'));
+const normalize=app.slice(app.indexOf('function normalizeQuestionSpacing'),app.indexOf(' function readableQuestionOcr'));
+const E=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const format=new Function('E',normalize+'\n'+fn+';return formatQuestionStatements;')(E);
+const html=format('질문?\nㄱ. 공정위험성 평가서 ㄴ. 안전운전계획\nㄷ. 비상조치계획 ㄹ. 공정안전자료');
+assert.deepEqual([...html.matchAll(/<dt>(.*?)<\/dt><dd>(.*?)<\/dd>/gs)].map(m=>[m[1],m[2]]),[['ㄱ.','공정위험성 평가서'],['ㄴ.','안전운전계획'],['ㄷ.','비상조치계획'],['ㄹ.','공정안전자료']]);
+for(const f of ['문장 ( ㄱ )과 ( ㄴ )의 내용은?','비교표: A 20 B 30\n1. 수치표','ㄱ. 단일 보기'])assert.ok(!format(f).includes('<dl'));
+const f=format('질문?\nㄱ. H₂SO₄ 0.5 mg/m³\n 2×3=6\nㄴ. <script>·제17조제2항');
+assert.ok(f.includes('H₂SO₄ 0.5 mg/m³\n2×3=6'));assert.ok(f.includes('&lt;script&gt;'));assert.ok(f.includes('제17조제2항'));
+console.log('Statement cards: inline columns, continuation, blanks, formulas and escaping passed.');
