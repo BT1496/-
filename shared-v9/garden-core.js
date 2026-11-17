@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 const KEY='jidosa-garden-v1',SUBJECTS=['law','general','corp'];
-const HELMETS={mint:{name:'새싹 안전모',cost:0,color:'#59b88d'},sun:{name:'햇살 안전모',cost:24,color:'#f3bf4f'},berry:{name:'딸기 안전모',cost:36,color:'#ed86a1'},night:{name:'별빛 안전모',cost:48,color:'#9388d7'}};
+const HELMETS={mint:{name:'새싹 잎모자',cost:0,color:'#59b88d'},sun:{name:'햇살 잎모자',cost:24,color:'#f3bf4f'},berry:{name:'딸기 잎모자',cost:36,color:'#ed86a1'},night:{name:'별빛 잎모자',cost:48,color:'#9388d7'}};
 const integer=(v,max=10000000)=>Number.isSafeInteger(v)&&v>=0&&v<=max?v:0;
 const dict=()=>Object.create(null),validId=v=>typeof v==='string'&&v.length>0&&v.length<=160&&!['__proto__','constructor','prototype'].includes(v);
 function dayKey(date){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);}
@@ -55,7 +55,7 @@ function create(options={}){
  function lesson(id){if(!validId(id))return {xp:0};const d=today();if(d.lessons[id])return {xp:0,duplicate:true};d.lessons[id]=true;const xp=s.lessonAwards[id]?0:15;s.lessonAwards[id]=true;s.xp+=xp;active();save();return {xp};}
  function missions(){const v=view();return [{id:'study60',name:'콩나무 60칸 오르기',hint:'법령 20 · 일반 20 · 기업진단·지도 20문제',count:v.dailyProgress,target:60,xp:75,coins:24},{id:'review',name:'오답 몬스터 물리치기',hint:'틀렸던 문제 5개 다시 맞히기',count:v.reviews,target:5,xp:20,coins:8},{id:'theory',name:'지식의 물 주기',hint:'이론 1단원 학습완료',count:v.lessons,target:1,xp:10,coins:4}].map(m=>({...m,claimed:!!v.claims[m.id],ready:m.count>=m.target&&!v.claims[m.id]}));}
  function claim(id){const m=missions().find(m=>m.id===id);if(!m?.ready)return {xp:0,coins:0};today().claims[id]=true;s.xp+=m.xp;s.coins+=m.coins;save();return {xp:m.xp,coins:m.coins};}
- function equip(id){const h=HELMETS[id];if(!h)return {ok:false,message:'선택할 수 없는 안전모입니다.'};if(!s.owned.includes(id)){if(s.coins<h.cost)return {ok:false,message:'코인을 조금 더 모아 주세요.'};s.coins-=h.cost;s.owned.push(id);}s.equipped=id;save();return {ok:true,message:h.name+'를 착용했어요.'};}
+ function equip(id){const h=HELMETS[id];if(!h)return {ok:false,message:'선택할 수 없는 잎모자입니다.'};if(!s.owned.includes(id)){if(s.coins<h.cost)return {ok:false,message:'코인을 조금 더 모아 주세요.'};s.coins-=h.cost;s.owned.push(id);}s.equipped=id;save();return {ok:true,message:h.name+'를 착용했어요.'};}
  function dueIds(){const day=dayKey(now());return Object.keys(s.progress).filter(id=>s.progress[id].due<=day);}
  function plan(bank,mode='daily',records={}){
   const day=today(),due=new Set(dueIds()),eligible=bank.filter(q=>q.answer!=null),shuffled=xs=>{xs=xs.slice();for(let i=xs.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[xs[i],xs[j]]=[xs[j],xs[i]];}return xs;};

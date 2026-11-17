@@ -131,3 +131,10 @@ body.mobile-layout.garden-enabled .mobile-nav button.active{color:#207653}
 .garden-css-player b{font-size:1.7rem}.garden-3d-mode{position:absolute;bottom:10px;left:10px;color:#5c7652;font-size:.6rem}
 @media(max-height:730px){.garden-3d-compact{height:132px}.garden-gameplay .garden-hud{padding:7px 10px}.garden-3d-compact .garden-3d-caption>span{font-size:.55rem}.garden-3d-compact .garden-3d-hint{font-size:.52rem}}
 @media(prefers-reduced-motion:reduce){.garden-css-player,.garden-3d-jump{transition:none}}
+
+/* Organic-tree fallback and seed-spirit portrait. */
+.garden-css-trunk{position:absolute;left:101px;bottom:-65px;width:27px;height:425px;transform:translateZ(-18px) rotateZ(-5deg);border-radius:65% 45% 8px 8px;background:repeating-linear-gradient(94deg,#725139 0 2px,#96754c 3px 6px,#aa8556 7px 9px);box-shadow:inset 5px 0 7px #513d3580,5px 0 9px #34502920}
+.garden-css-step{border-radius:50% 44% 48% 42%;background:radial-gradient(ellipse at 40% 35%,#a3be79,#708d54);border-bottom-color:#8a6b45;box-shadow:7px 9px 0 #6e573a}
+.garden-css-step::before{content:"";position:absolute;width:60px;height:10px;left:-39px;top:16px;background:#82603e;border-radius:80% 20%;transform:translateZ(-8px) rotateZ(-18deg)}
+.garden-css-step::after{content:"";position:absolute;width:38px;height:19px;right:-12px;top:-8px;border-radius:2px 100% 2px 100%;background:linear-gradient(20deg,#6d944c,#a0bc72);transform:rotateZ(-20deg)}
+.garden-css-player svg{width:54px;height:66px;filter:drop-shadow(0 4px 3px #49613435)}

@@ -73,11 +73,11 @@ function rendererTests(source){
  ok(R.math.pose(9,10,.5)[1]>(R.math.point(9)[1]+R.math.point(10)[1])/2,'jump has a visible arc');
  ok(R.math.pose(9,9,.5).every((x,i)=>near(x,R.math.point(9)[i])),'unchanged altitude does not jump');
  for(const [name,[positions,normals]]of Object.entries(R.meshes()))ok(positions.length===normals.length&&positions.length%9===0&&positions.every(Number.isFinite)&&normals.every(Number.isFinite),'valid 3D mesh '+name);
- let draws=0,matrices=0;
+ let draws=0,matrices=0;const materials=new Set();
  const gl={};for(const [i,k]of ['VERTEX_SHADER','FRAGMENT_SHADER','COMPILE_STATUS','LINK_STATUS','ARRAY_BUFFER','STATIC_DRAW','DEPTH_TEST','CULL_FACE','FLOAT','TRIANGLES','COLOR_BUFFER_BIT','DEPTH_BUFFER_BIT'].entries())gl[k]=i+1;
  for(const name of ['createShader','createProgram','createBuffer'])gl[name]=()=>({});
  for(const name of ['shaderSource','compileShader','attachShader','linkProgram','useProgram','bindBuffer','bufferData','enable','disable','viewport','clearColor','clear','enableVertexAttribArray','vertexAttribPointer'])gl[name]=()=>{};
- gl.getShaderParameter=gl.getProgramParameter=()=>true;gl.getAttribLocation=()=>0;gl.getUniformLocation=(p,n)=>n;
+ gl.uniform1f=(u,value)=>{if(![0,1,2].includes(value))throw new Error('invalid organic material');materials.add(value);};gl.getShaderParameter=gl.getProgramParameter=()=>true;gl.getAttribLocation=()=>0;gl.getUniformLocation=(p,n)=>n;
  gl.uniformMatrix4fv=(u,t,m)=>{if(m.length!==16||!Array.from(m).every(Number.isFinite))throw new Error('invalid 4D transform');matrices++;};
  gl.uniformMatrix3fv=(u,t,m)=>{if(m.length!==9||!Array.from(m).every(Number.isFinite))throw new Error('invalid normal transform');};
  gl.uniform3fv=(u,c)=>{if(!Array.from(c).every(Number.isFinite))throw new Error('invalid color');};
@@ -96,6 +96,13 @@ function rendererTests(source){
  runtime.StudyGarden3D.mount(null,{});
  const fallbackRoot={document:{createElement:()=>({setAttribute(){},addEventListener(){},getContext:()=>null})},performance:{now:()=>0},addEventListener(){}};
  new Function('globalThis','module',source)(fallbackRoot,{exports:{}});const fallbackHost={innerHTML:''};fallbackRoot.StudyGarden3D.mount(fallbackHost,{climb:3,equipped:'mint'});ok(fallbackHost.innerHTML.includes('간편 3D 모드')&&fallbackHost.innerHTML.includes('3칸'),'unsupported WebGL has working 3D fallback');
+
+
+ ok(materials.has(1)&&materials.has(2),'bark and leaf materials are rendered');
+ const [tp,tn]=R.geometry.treeMesh(10000);ok(tp.every(Number.isFinite)&&tn.every(Number.isFinite)&&tp.filter((v,i)=>i%3===1).every(y=>Math.abs(y)<30),'curved trunk remains stable at high climbing altitude');
+ const [lp,ln]=R.geometry.leafMesh();ok(lp.some((v,i)=>i%3===1&&v>.1)&&lp.some((v,i)=>i%3===2&&Math.abs(v)>.2),'leaf mesh has a curved blade with width and depth');
+ ok(Array.from({length:ln.length/3},(_,i)=>Math.hypot(...ln.slice(i*3,i*3+3))).every(n=>Math.abs(n-1)<.001),'leaf normals stay finite and normalized');
+ const a3=[1,2,3],b3=[2,4,5],bm=R.geometry.branchMatrix(a3,b3,.1);ok(vec(bm,[0,-1,0,1]).slice(0,3).every((x,i)=>near(x,a3[i]))&&vec(bm,[0,1,0,1]).slice(0,3).every((x,i)=>near(x,b3[i])),'branches attach exactly to trunk and platform endpoints');
 
  return checks;
 }
